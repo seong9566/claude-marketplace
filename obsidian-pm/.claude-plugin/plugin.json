@@ -1,0 +1,9 @@
+{
+  "name": "obsidian-pm",
+  "version": "0.1.0",
+  "description": "Obsidian PM vault 운영 스킬. 프로젝트에 네이티브 Bases 태스크 보드와 task 노트를 올려 PM↔코드 진행을 추적한다.",
+  "author": {
+    "name": "HyeonSeong",
+    "email": "dlgustjd9566@gmail.com"
+  }
+}
