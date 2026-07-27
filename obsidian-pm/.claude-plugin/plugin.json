@@ -1,7 +1,7 @@
 {
   "name": "obsidian-pm",
-  "version": "0.1.0",
-  "description": "Obsidian PM vault 운영 스킬. 프로젝트에 네이티브 Bases 태스크 보드와 task 노트를 올려 PM↔코드 진행을 추적한다.",
+  "version": "0.2.0",
+  "description": "Obsidian PM vault 운영 스킬 3종 — vault 부트스트랩, 프로젝트 승격, 네이티브 Bases 태스크 보드 스캐폴딩.",
   "author": {
     "name": "HyeonSeong",
     "email": "dlgustjd9566@gmail.com"

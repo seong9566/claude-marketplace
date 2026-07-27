@@ -17,11 +17,22 @@
 
 Obsidian PM vault 운영 스킬.
 
-| 스킬 | 언제 |
-| --- | --- |
-| `project-board-scaffold` | `wiki/projects/<P>/`에 PRD·설계는 있는데 task 추적이 없을 때. 보드(`tasks.base`) + task 노트를 올리고 이미 진행한 작업을 소급 기록한다 |
+세 스킬이 **vault 생성 → 프로젝트 승격 → 태스크 추적** 한 줄로 이어진다. 각 단계는 다음 단계를 안내만 하고 대신 하지 않는다.
 
-**vault 경로는 `TASK_VAULT` 환경변수로 준다.** 동봉한 `task.sh`는 `TASK_VAULT/wiki/projects/`가 없으면 아무것도 하지 않고 종료한다.
+| 스킬 | 언제 | 만드는 것 |
+| --- | --- | --- |
+| `vault-bootstrap` | 빈 폴더에서 새 vault를 세울 때, 또는 기존 vault에 운영 규약이 없을 때 | 폴더 26개 + `AGENTS.md`·`CLAUDE.md`·`wiki/index.md`·`log.md` + `wiki/meta/` 템플릿 11종 |
+| `project-scaffold` | 검증 통과 후보를 프로젝트로 승격할 때 | `wiki/projects/<P>/`의 `index.md` + `prd.md`(공통분모 5섹션) **둘만** |
+| `project-board-scaffold` | PRD가 서고 task 추적이 필요할 때 | `tasks.base` 보드 + `tasks/` 노트, 기존 진행분 소급 기록 |
+
+**vault 경로는 `TASK_VAULT` 환경변수로 준다**(`vault-bootstrap`만 인자로 받는다). 동봉 스크립트는 `TASK_VAULT/wiki/projects/`가 없으면 아무것도 하지 않고 종료한다.
+
+```bash
+bash <vault-bootstrap>/bootstrap.sh ~/path/to/new-vault      # 기존 파일은 덮어쓰지 않음(멱등)
+export TASK_VAULT=~/path/to/new-vault
+bash <project-scaffold>/project-new.sh 내-앱 --title "내 앱" --summary "한 줄 정의"
+bash <project-board-scaffold>/task.sh new T01 "첫 작업" --project 내-앱 --section pm
+```
 
 ```bash
 export TASK_VAULT=~/path/to/vault
