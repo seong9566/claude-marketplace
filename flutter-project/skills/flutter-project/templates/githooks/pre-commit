@@ -1,0 +1,8 @@
+#!/bin/sh
+# 구조 검사(lib 전체)와 staged 결정론 검사를 순서대로 실행한다.
+# worktree-safe (추적됨 + core.hooksPath). 우회: git commit --no-verify
+repo_root=$(git rev-parse --show-toplevel) || exit 1
+cd "$repo_root" || exit 1
+
+"$repo_root/.claude/hooks/check-architecture.sh" --report || exit $?
+node "$repo_root/tool/review/check.mjs" --staged

@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-architecture.sh",
+            "statusMessage": "아키텍처 준수 점검"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_response.filePath // .tool_input.file_path' | { read -r f; case \"$f\" in *.dart) dart format \"$f\" >/dev/null 2>&1 ;; esac; } || true",
+            "statusMessage": "dart format"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(flutter pub *)",
+      "Bash(flutter analyze*)",
+      "Bash(flutter test*)",
+      "Bash(flutter doctor*)",
+      "Bash(flutter clean)",
+      "Bash(flutter build *)",
+      "Bash(dart format*)",
+      "Bash(dart analyze*)",
+      "Bash(dart test*)",
+      "Bash(dart pub *)",
+      "Bash(dart fix*)",
+      "Bash(dart run *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git branch*)",
+      "Bash(git stash list)",
+      "Bash(git remote -v)",
+      "Bash(ls *)",
+      "Bash(pwd)",
+      "Bash(which *)",
+      "Bash(jq *)",
+      "Bash(rg *)"
+    ]
+  }
+}

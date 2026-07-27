@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      # 검증할 PR 커밋을 가져온다.
+      - uses: actions/checkout@v4
+
+      # 분석·테스트에 사용할 stable Flutter SDK를 캐시와 함께 준비한다.
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      # Android 빌드를 추가할 때만 actions/setup-java 단계를 함께 추가한다.
+
+      # 잠금 파일 기준으로 의존성을 복원한다.
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 누락되거나 충돌한 코드 생성물이 후속 검사를 속이지 못하게 다시 만든다.
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      # 타입·lint·아키텍처 분석 오류의 병합을 막는다.
+      - name: Analyze
+        run: flutter analyze
+
+      # 단위·위젯 테스트 회귀의 병합을 막는다.
+      - name: Test
+        run: flutter test
+
+      # Makefile의 UI 제외 후 90% 커버리지 게이트를 원격에서도 강제한다.
+      - name: Enforce coverage
+        run: make coverage

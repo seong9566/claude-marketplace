@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "seong-skills",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "개인용 Claude Code 플러그인 마켓플레이스 — Obsidian PM vault 운영과 개발 워크플로 스킬.",
   "owner": {
     "name": "HyeonSeong",
@@ -14,6 +14,12 @@
       "description": "Obsidian PM vault 운영 스킬 3종. vault-bootstrap(3레이어 구조+운영 규약), project-scaffold(검증 통과 후보를 wiki/projects/<P>/ 로 승격), project-board-scaffold(tasks.base 보드+task 노트). vault 경로는 TASK_VAULT 로 주입한다.",
       "source": "./obsidian-pm",
       "category": "productivity"
+    },
+    {
+      "name": "flutter-project",
+      "description": "새 Flutter repo를 아키텍처 판정부터 스캐폴딩한다. PRD를 읽고 feature-first vs layer-first를 bounded context 결합도로 판정한 뒤, 동봉된 템플릿(구조 검사 9종 Stop hook·git 훅·커버리지 게이트·CI·ADR 체계·core 인프라)으로 repo를 만들고 검증 게이트 5종을 통과시킨다.",
+      "source": "./flutter-project",
+      "category": "development"
     }
   ]
 }

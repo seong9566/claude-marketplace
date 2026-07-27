@@ -1,0 +1,71 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve version from tag
+        id: version
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Release version: $version"
+
+      - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
+
+      # 서명 설정이 없으면 debug 키로 서명되는 확인용 APK다. 스토어 배포용 산출물이 아니다.
+      - name: Build verification APK
+        run: >-
+          flutter build apk --release
+          --build-name="${{ steps.version.outputs.version }}"
+          --build-number="${{ github.run_number }}"
+
+      - name: Attach APK to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: build/app/outputs/flutter-apk/app-release.apk
+
+  # iOS는 macOS 러너와 서명 구성이 필요하다. 준비 후 Actions 변수 ENABLE_IOS_RELEASE를 true로 설정한다.
+  ios:
+    if: ${{ vars.ENABLE_IOS_RELEASE == 'true' }}
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: dart run build_runner build --delete-conflicting-outputs
+
+      # App Store Connect 인증과 인증서 복원을 먼저 구성해야 이 단계가 동작한다.
+      - name: Build signed IPA
+        run: >-
+          flutter build ipa --release
+          --build-name="${GITHUB_REF_NAME#v}"
+          --build-number="${{ github.run_number }}"

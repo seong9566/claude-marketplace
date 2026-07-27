@@ -1,0 +1,12 @@
+#!/bin/sh
+# main 직접 push 금지 게이트. main은 릴리즈 전용 — 작업은 dev에서 파생해 PR로.
+# worktree-safe (추적됨 + core.hooksPath). 우회: git push --no-verify
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_ref" = "refs/heads/main" ]; then
+    echo "✋ main 직접 push 금지 — main은 릴리즈 전용 브랜치다." >&2
+    echo "   기능·버그는 dev에서 파생해 dev로 PR하고, 릴리즈만 dev→main PR로 머지한다." >&2
+    echo "   (정말 필요하면 git push --no-verify)" >&2
+    exit 1
+  fi
+done
+exit 0
