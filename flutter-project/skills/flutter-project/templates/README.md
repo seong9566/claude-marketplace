@@ -64,15 +64,20 @@
 | `lib/app/theme/app_theme.dart` | 신작 | 위 토큰을 조립하는 Light/Dark `ThemeData` |
 | `lib/core/extensions/` | 신작 | app·feature를 참조하지 않는 순수 Dart 대상 extension |
 | `lib/core/utils/` | 신작 | `XxxUtils` 클래스가 아닌 top-level 함수 |
-| `lib/shared/value_objects/` | 신작 | 둘 이상 기능이 합의한 순수 Dart 값객체 |
-| `lib/shared/entities/` | 신작 | 둘 이상 기능이 합의한 read-mostly 순수 Dart 엔티티 |
 | `lib/shared/widgets/` | 신작 | 둘 이상 기능이 실제로 쓰는 표현 전용 공용 UI 위젯 |
 
 `shared/`는 순수 Dart를 유지하되, Flutter import는 `shared/widgets/` 하위만 예외로 허용한다.
 
-빈 디렉터리 다섯 곳에는 용도를 적은 짧은 `README.md`와 디렉터리 보존용
-`.gitkeep`만 둔다. 실제 feature와 `test/` 미러, `docs/ARCHITECTURE.md`,
-`pubspec.yaml`은 스캐폴딩 시 PRD와 골격 정본에 맞춰 생성한다.
+**공유 도메인 폴더(`shared/value_objects/`·`shared/entities/`)는 동봉하지 않는다.**
+기본은 기능별 각자 모델링이고, 두 화면이 같은 API를 불러도 domain은 기능별로
+갈리는 게 정상이다. 승격 규칙(골격 §3③)을 전부 충족하는 공유 도메인이 실제로
+생기면 그때 `shared/` 아래 만든다 — `core/`에는 넣지 않는다. 검사는 이미
+`lib/shared/**`를 도메인 레이어로 취급하므로 나중에 만들어도 게이트가 바로 걸린다.
+
+빈 디렉터리 세 곳(`core/extensions/`·`core/utils/`·`shared/widgets/`)에는 용도를
+적은 짧은 `README.md`와 디렉터리 보존용 `.gitkeep`만 둔다. 실제 feature와
+`test/` 미러, `docs/ARCHITECTURE.md`, `pubspec.yaml`은 스캐폴딩 시 PRD와 골격
+정본에 맞춰 생성한다.
 
 ## CI·릴리즈·결정 기록 템플릿
 

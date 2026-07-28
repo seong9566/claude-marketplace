@@ -1,6 +1,8 @@
 # 공용 UI 위젯
 
-여러 기능이 함께 쓰는 UI 위젯의 유일한 자리다. `shared/value_objects/`와 `shared/entities/`는 순수 Dart를 유지하며, Flutter import 예외는 `shared/widgets/` 하위에만 적용한다.
+여러 기능이 함께 쓰는 UI 위젯의 유일한 자리다. `shared/` 아래 다른 모든 것은 순수 Dart를 유지하며, Flutter import 예외는 `shared/widgets/` 하위에만 적용한다.
+
+공유 도메인(값객체·엔티티) 폴더는 **미리 만들어 두지 않는다** — 기본은 기능별 각자 모델링이고, 두 화면이 같은 API를 불러도 domain은 기능별로 갈리는 게 정상이다. 승격 규칙을 전부 충족하는 공유 도메인이 실제로 생기면 그때 `shared/` 아래 만든다(`core/`에는 넣지 않는다). 자세한 기준은 골격 정본 §3③.
 
 - 둘 이상 기능이 실제로 쓰는 표현 전용 위젯만 둔다. 한 기능만 쓰면 해당 기능의 `presentation/widgets/`에 둔다.
 - 특정 기능의 도메인을 알거나 ViewModel·Repository를 직접 호출하는 위젯은 두지 않는다.

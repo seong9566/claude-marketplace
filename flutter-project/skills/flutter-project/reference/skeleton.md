@@ -57,10 +57,9 @@
 │   │   │   └── route_path.dart          #   [T]
 │   │   └── utils/                       #   top-level 함수만 — XxxUtils 정적 클래스 금지(검사 3.1) [T]
 │   │
-│   ├── shared/                          # ★공유 커널 — 빈 채로 시작. 승격 규칙·한계신호 §3③ [신작]
-│   │   ├── value_objects/               #   Money·Id 등 값객체 — 순수 Dart
-│   │   ├── entities/                    #   여러 기능이 하나로 합의하는 read-mostly 엔티티 — 순수 Dart
+│   ├── shared/                          # core·features 옆 peer — 스캐폴딩은 widgets/만 만든다 [T]
 │   │   └── widgets/                     #   ★공용 UI 위젯의 유일한 자리 — 여기만 Flutter 허용(검사 1.3 예외)
+│   │                                    #   공유 도메인(값객체·엔티티)은 미리 만들지 않는다 — 필요해지면 §3③
 │   │
 │   └── features/<feature>/              # ★수직 슬라이스 — 서로 import 금지(검사 1.2) [T]
 │       ├── presentation/                #   Flutter 의존 허용
@@ -189,12 +188,16 @@ feature-first + 클린 아키의 기본값은 공유가 아니라 **기능별 �
 
 공유가 정말 필요한 소수의 도메인은 `core/`(인프라)가 아니라 **`shared/`(core·features 옆 peer)**에 둔다. 도메인을 core에 넣으면 core가 인프라 옷 입은 도메인 레이어로 썩는다(§9 채택하지 않은 것).
 
-**shared/ 승격 규칙(전부 충족):**
+**골격은 공유 도메인 폴더를 미리 만들지 않는다.** 두 기준 repo가 기능 5개·8개를 굴리면서 한 번도 필요로 하지 않았다 — "미검증 추정을 골격에 넣지 않는다"는 §9 규율이 여기에도 걸린다. 스캐폴딩이 만드는 `shared/`는 `widgets/`뿐이다(공용 UI — 실측 근거 §4).
+
+**승격 규칙(전부 충족해야 그때 만든다):**
 - 2개+ 기능이 실제로 참조한다(1개면 그 기능 `domain/`에 둔다).
 - 값객체·원시타입(`Money`·`Id`·enum)이거나 read-mostly 참조 엔티티다 — 또는 2개+ 기능이 *하나의* 모델에 반드시 합의해야 한다.
-- 아니면 → 각 기능이 각자 모델링(중복 허용).
+- 아니면 → 각 기능이 각자 모델링(중복 허용). **두 화면이 같은 API를 불러도 domain은 기능별로 갈리는 게 정상이다** — 같은 DTO를 두 번 쓰는 건 결합이 아니라 bounded context의 대가다. 공유 폴더가 필요하다고 느껴지면 먼저 경계를 의심한다.
 
-**계약**: `shared/`는 순수 Dart(Flutter·Riverpod import 금지, domain과 동일). features는 shared를 import해도 되지만 shared는 app·features·data를 모른다 — 검사는 shared를 도메인 레이어로 취급한다(§4).
+만들 때도 **`core/`에는 넣지 않는다.** 검사가 `lib/shared/**`를 이미 도메인 레이어로 취급하므로(§4) 나중에 생겨도 게이트는 즉시 적용된다 — 자리를 비워두는 것이 규칙을 약하게 만들지 않는다.
+
+**계약**: `shared/`는 순수 Dart(Flutter·Riverpod import 금지, domain과 동일) — **`shared/widgets/`만 예외**(§4). features는 shared를 import해도 되지만 shared는 app·features·data를 모른다.
 
 **한계 신호 = layer-first**: shared/가 작은 커널을 넘어 **리치 가변 애그리거트**를 담기 시작하거나 어느 기능 `domain/`보다 커지면, "사실 하나의 bounded context"라는 신호다 → 판정 인터뷰에서 layer-first 변형으로 재검토한다(거기선 `domain/`이 설계상 단일 공유 레이어라 이 문제가 없다).
 

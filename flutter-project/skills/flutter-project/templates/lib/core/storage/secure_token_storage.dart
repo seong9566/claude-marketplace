@@ -2,9 +2,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// access·refresh token을 Keychain/Keystore에 보관한다.
 ///
-/// 자동 로그인(영속) 세션에서 두 토큰을 모두 저장한다. 서버가 refresh 요청에서도
-/// access token을 요구하므로, 콜드 스타트 refresh의 Authorization 헤더에 실어
-/// 보낼 수 있도록 access token을 refresh token과 함께 영속 저장한다.
+/// 두 토큰을 모두 영속 저장한다 — 콜드 스타트 refresh에서 access token을
+/// Authorization 헤더에 실어야 하는 백엔드가 있어서다. 서버 규약에 따라
+/// refresh token만 두어도 되면 그때 줄인다.
 class SecureTokenStorage {
   const SecureTokenStorage(this._storage);
 
