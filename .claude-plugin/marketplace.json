@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "seong-skills",
-  "version": "0.3.0",
-  "description": "개인용 Claude Code 플러그인 마켓플레이스 — Obsidian PM vault 운영과 개발 워크플로 스킬.",
+  "version": "0.4.0",
+  "description": "개인용 Claude Code 플러그인 마켓플레이스 — Obsidian PM vault 운영, 개발 워크플로, 개발 하네스 스킬.",
   "owner": {
     "name": "HyeonSeong",
     "email": "dlgustjd9566@gmail.com",
@@ -19,6 +19,18 @@
       "name": "flutter-project",
       "description": "새 Flutter repo를 아키텍처 판정부터 스캐폴딩한다. PRD를 읽고 feature-first vs layer-first를 bounded context 결합도로 판정한 뒤, 동봉된 템플릿(구조 검사 9종 Stop hook·git 훅·커버리지 게이트·CI·ADR 체계·core 인프라)으로 repo를 만들고 검증 게이트 5종을 통과시킨다.",
       "source": "./flutter-project",
+      "category": "development"
+    },
+    {
+      "name": "sdd-harness",
+      "description": "계획을 subagent에 위임해 실행하는 개발 하네스 스킬 14종. 계획 수립(writing-plans·brainstorming)부터 태스크별 구현·리뷰·유계 fix 루프(subagent-driven-development, 스크립트 없는 -lite 변형 포함), TDD·체계적 디버깅·워크트리 격리·브랜치 마감까지. 업스트림 superpowers v6.2.0(MIT, Jesse Vincent) 파생 — 경로·브랜치 규약은 repo CLAUDE.md에서 지정한다.",
+      "source": "./sdd-harness",
+      "category": "development"
+    },
+    {
+      "name": "dev-harness",
+      "description": "개발 세션 보조 스킬 5종. ai-readiness-cartography(저장소 AI-Ready 감사·HTML 리포트), code-review(PR 리뷰), grilling+grill-me(계획·결정 스트레스 테스트), improve-token-efficiency(세션 JSONL 토큰 효율 분석·대시보드).",
+      "source": "./dev-harness",
       "category": "development"
     }
   ]
