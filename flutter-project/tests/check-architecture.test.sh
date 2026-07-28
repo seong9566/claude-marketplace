@@ -15,7 +15,9 @@ fail() {
 
 new_tree() {
   local tree="$1"
+  local package_name="${2:-example}"
   mkdir -p "$tree/lib"
+  printf 'name: %s\n' "$package_name" > "$tree/pubspec.yaml"
   printf '%s\n' '*.g.dart' '*.freezed.dart' > "$tree/.gitignore"
 }
 
@@ -111,6 +113,54 @@ assert_check_passes() {
   shift 3
 
   new_tree "$tree"
+  while [ "$#" -gt 0 ]; do
+    write_source "$tree" "$1" "$2"
+    shift 2
+  done
+  run_report "$hook" "$tree"
+
+  [ "$REPORT_STATUS" -eq 0 ] \
+    || fail "$name: expected report exit 0, got $REPORT_STATUS
+$REPORT_OUTPUT"
+  for check_id in $check_ids; do
+    printf '%s\n' "$REPORT_OUTPUT" | grep -Fq "PASS [$check_id]" \
+      || fail "$name: expected $check_id pass
+$REPORT_OUTPUT"
+  done
+}
+
+assert_demo_app_check_fails() {
+  local name="$1"
+  local hook="$2"
+  local check_id="$3"
+  local source="$4"
+  local import_line="$5"
+  local tree="$TMP_ROOT/$name"
+
+  new_tree "$tree" "demo_app"
+  write_source "$tree" "$source" "$import_line"
+  run_report "$hook" "$tree"
+
+  [ "$REPORT_STATUS" -eq 1 ] \
+    || fail "$name: expected report exit 1, got $REPORT_STATUS
+$REPORT_OUTPUT"
+  printf '%s\n' "$REPORT_OUTPUT" | grep -Fq "FAIL [$check_id]" \
+    || fail "$name: expected $check_id failure
+$REPORT_OUTPUT"
+  printf '%s\n' "$REPORT_OUTPUT" | grep -Fq "$source:1:$import_line" \
+    || fail "$name: expected file:line:content violation output
+$REPORT_OUTPUT"
+}
+
+assert_demo_app_checks_pass() {
+  local name="$1"
+  local hook="$2"
+  local check_ids="$3"
+  local check_id
+  local tree="$TMP_ROOT/$name"
+  shift 3
+
+  new_tree "$tree" "demo_app"
   while [ "$#" -gt 0 ]; do
     write_source "$tree" "$1" "$2"
     shift 2
@@ -282,4 +332,116 @@ assert_check_fails \
   "lib/shared/widgets/bad2.dart" \
   "import 'package:example/data/repositories/r.dart';"
 
-echo "PASS: check-architecture 1.2/1.2' and shared/widgets regression tests"
+assert_demo_app_checks_pass \
+  "feature-demo-app-allowed-imports" \
+  "$FEATURE_HOOK" \
+  "1_1 1_4 1_5" \
+  "lib/core/errors/result.dart" \
+  "import 'package:demo_app/core/errors/failures.dart';" \
+  "lib/core/network/client.dart" \
+  "import '../logging/app_logger.dart';" \
+  "lib/shared/widgets/dialog.dart" \
+  "import 'package:demo_app/shared/widgets/button.dart';" \
+  "lib/core/network/dio_client.dart" \
+  "import 'package:dio/dio.dart';" \
+  "lib/core/network/features_client.dart" \
+  "import 'package:features_client/features/y.dart';" \
+  "lib/features/auth/presentation/screens/external.dart" \
+  "import 'package:external_package/data/y.dart';" \
+  "lib/shared/async/runner.dart" \
+  "import 'dart:async';" \
+  "lib/features/auth/domain/entities/session.dart" \
+  "import 'package:demo_app/features/auth/domain/entities/user.dart';"
+
+assert_demo_app_check_fails \
+  "feature-demo-app-core-to-feature" \
+  "$FEATURE_HOOK" \
+  "1_1" \
+  "lib/core/x.dart" \
+  "import 'package:demo_app/features/auth/y.dart';"
+
+assert_demo_app_check_fails \
+  "feature-relative-core-to-app" \
+  "$FEATURE_HOOK" \
+  "1_1" \
+  "lib/core/x.dart" \
+  "import '../app/y.dart';"
+
+assert_demo_app_check_fails \
+  "feature-demo-app-screen-to-data" \
+  "$FEATURE_HOOK" \
+  "1_4" \
+  "lib/features/auth/presentation/screens/s.dart" \
+  "import 'package:demo_app/features/auth/data/y.dart';"
+
+assert_demo_app_check_fails \
+  "feature-demo-app-view-model-to-data" \
+  "$FEATURE_HOOK" \
+  "1_4" \
+  "lib/features/auth/presentation/view_models/v.dart" \
+  "import 'package:demo_app/features/auth/data/y.dart';"
+
+assert_demo_app_check_fails \
+  "feature-demo-app-domain-to-data" \
+  "$FEATURE_HOOK" \
+  "1_5" \
+  "lib/features/auth/domain/x.dart" \
+  "import 'package:demo_app/features/auth/data/y.dart';"
+
+assert_demo_app_checks_pass \
+  "layered-demo-app-allowed-imports" \
+  "$LAYERED_HOOK" \
+  "1_1 1_4 1_5" \
+  "lib/core/errors/result.dart" \
+  "import 'package:demo_app/core/errors/failures.dart';" \
+  "lib/core/network/client.dart" \
+  "import '../logging/app_logger.dart';" \
+  "lib/shared/widgets/dialog.dart" \
+  "import 'package:demo_app/shared/widgets/button.dart';" \
+  "lib/core/network/dio_client.dart" \
+  "import 'package:dio/dio.dart';" \
+  "lib/core/network/presentation_client.dart" \
+  "import 'package:presentation_client/presentation/y.dart';" \
+  "lib/presentation/auth/screens/external.dart" \
+  "import 'package:external_package/data/y.dart';" \
+  "lib/shared/async/runner.dart" \
+  "import 'dart:async';" \
+  "lib/domain/entities/session.dart" \
+  "import 'package:demo_app/domain/entities/user.dart';"
+
+assert_demo_app_check_fails \
+  "layered-demo-app-core-to-presentation" \
+  "$LAYERED_HOOK" \
+  "1_1" \
+  "lib/core/x.dart" \
+  "import 'package:demo_app/presentation/auth/y.dart';"
+
+assert_demo_app_check_fails \
+  "layered-relative-core-to-app" \
+  "$LAYERED_HOOK" \
+  "1_1" \
+  "lib/core/x.dart" \
+  "import '../app/y.dart';"
+
+assert_demo_app_check_fails \
+  "layered-demo-app-screen-to-data" \
+  "$LAYERED_HOOK" \
+  "1_4" \
+  "lib/presentation/auth/screens/s.dart" \
+  "import 'package:demo_app/data/y.dart';"
+
+assert_demo_app_check_fails \
+  "layered-demo-app-view-model-to-data" \
+  "$LAYERED_HOOK" \
+  "1_4" \
+  "lib/presentation/auth/view_models/v.dart" \
+  "import 'package:demo_app/data/y.dart';"
+
+assert_demo_app_check_fails \
+  "layered-demo-app-domain-to-data" \
+  "$LAYERED_HOOK" \
+  "1_5" \
+  "lib/domain/x.dart" \
+  "import 'package:demo_app/data/y.dart';"
+
+echo "PASS: check-architecture import boundary regression tests"

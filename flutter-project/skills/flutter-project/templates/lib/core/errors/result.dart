@@ -33,12 +33,14 @@ sealed class Result<T> {
 
 /// 성공 케이스: 비즈니스 데이터를 포함한다
 final class Success<T> extends Result<T> {
-  final T data;
   const Success(this.data);
+
+  final T data;
 }
 
 /// 실패 케이스: Failure 타입으로 에러 종류를 명시한다
 final class AppFailure<T> extends Result<T> {
-  final Failure failure;
   const AppFailure(this.failure);
+
+  final Failure failure;
 }

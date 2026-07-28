@@ -67,10 +67,11 @@ PRD·기능정의서를 읽고 아키텍처(feature-first vs layer-first)를 판
 **6.1의 `flutter create`를 뺀 이하 모든 명령은 생성된 `<경로>` 안(cwd)에서 실행한다** — 스킬 실행 위치와 무관하게 게이트·hook 경로(`.claude/hooks/…`·`.githooks/…`)는 새 repo 기준 상대경로다.
 
 1. `flutter create --org <org> --project-name <이름> --platforms=android,ios <경로>`
+   **직후 기본 산출물을 정리한다** — `flutter create`가 만든 `test/widget_test.dart`는 기본 `main.dart`의 `MyApp`을 참조하는데, 다음 단계에서 `lib/`를 통째로 교체하므로 **없는 클래스를 가리켜 `flutter analyze`가 error로 죽는다**(2026-07-28 드라이런 실측). 이 파일을 지우고, 골격에 맞는 스모크 테스트가 필요하면 나중에 `test/` 미러 규약대로 새로 쓴다.
 2. 골격 정본 §2(또는 변형)·§6(의존성 — **재계산 금지, 목록 그대로**)·§8(결정 표)대로 파일 작성. `[T]` 태그 파일은 이 스킬의 `templates/` 실물을 읽어 패키지명만 바꿔 이식하고, `[신작]`은 §8 구성대로 작성한다. 실제 feature와 `test/` 미러, `docs/ARCHITECTURE.md`, `pubspec.yaml`은 템플릿에 없으므로 스캐폴딩 시 PRD와 골격 정본에 맞춰 생성한다. PM vault를 함께 쓰는 경우에만, 새 repo `CLAUDE.md`에 해당 vault의 핸드오프 지침을 연결하는 선택 단계를 수행한다.
 3. **판정을 ADR로 기록한다** — `docs/adr/0001-architecture-<feature-first|layer-first>.md`를 `_template.md` 형식으로 쓰고 인덱스 표에 한 줄 등록한다. 맥락=제품 기능과 공유 관계 / 결정=채택한 분할축 / **근거=Q1a~c의 답과 인용한 기획 문서 대목 + 버린 쪽을 버린 이유** / 영향=적용되는 검사 경로(1.2 또는 1.2′)와 이음매 사용 방식. 판정은 이 스킬의 존재 이유인데 기록하지 않으면 몇 달 뒤 "왜 이 구조인가"에 답할 근거가 사라진다 — ADR 폴더를 빈 채로 넘기지 않는다.
 4. `git init`. **hooksPath·초기 커밋은 아직** — 게이트(6.5)를 통과한 뒤 6.6에서 한다.
-5. **검증 게이트(전부 통과해야 완료)**: `flutter pub get` → `dart run build_runner build --delete-conflicting-outputs` → `flutter analyze`(0 issues) → `flutter test` → `.claude/hooks/check-architecture.sh --report`(9종 PASS). **게이트가 실패하면** 그 자리에서 고쳐 남은 게이트만 이어 재실행한다 — repo가 이미 있어 스킬을 다시 부르면 1(연결)에서 abort되므로 **재-invoke 금지**(부분 실패 복구는 수동).
+5. **검증 게이트(전부 통과해야 완료)**: `flutter pub get` → `dart run build_runner build` → `flutter analyze`(0 issues) → `flutter test` → `.claude/hooks/check-architecture.sh --report`(9종 PASS). **`flutter test`는 테스트가 하나도 없으면 exit 1이다**(6.1에서 기본 `widget_test.dart`를 지웠으므로 `test/`가 비어 있을 수 있다 — 2026-07-28 드라이런 실측). 게이트가 의미를 가지려면 6.2에서 만든 기능에 대해 **최소 한 개의 실제 테스트**를 `test/` 미러 규약대로 써 둔다. **게이트가 실패하면** 그 자리에서 고쳐 남은 게이트만 이어 재실행한다 — repo가 이미 있어 스킬을 다시 부르면 1(연결)에서 abort되므로 **재-invoke 금지**(부분 실패 복구는 수동).
 6. `git config core.hooksPath .githooks` → **초기 커밋 1개**(scaffold). 게이트 통과·codegen 산출 뒤에 커밋하므로 pre-commit(`check-architecture.sh` + `check.mjs --staged`)이 생성물 부재로 막히지 않는다.
 
 ## 7. 완료 보고

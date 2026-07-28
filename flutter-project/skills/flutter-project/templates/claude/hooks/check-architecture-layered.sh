@@ -16,19 +16,29 @@ fi
 # ---------- 점검 항목 ----------
 # check_<id>: 위반 내용을 stdout으로 출력한다. 출력이 없으면 통과.
 
-check_1_1() { # core/shared → app·3레이어 import 금지
-  grep -rnE "^[[:space:]]*import[[:space:]].*(app|data|domain|presentation)/" \
-    lib/core lib/shared --include="*.dart" 2>/dev/null
-  return 0
-}
+check_import_targets() {
+  local target_pattern="$1"
+  local allowed_root="$2"
+  local package_name=""
+  shift 2
 
-check_1_2() { # presentation 기능 간 직접 import 금지(1.2′)
-  local f fname
-  for f in lib/presentation/*/; do
-    [ -d "$f" ] || continue
-    fname=$(basename "$f")
-    # import URI를 파일 디렉터리 기준으로 문자열 정규화해 존재하지 않는 상대 경로도 판정한다.
-    find "$f" -type f -name "*.dart" -exec awk -v current="$fname" -v boundary="presentation" '
+  if [ -f pubspec.yaml ]; then
+    package_name=$(awk '
+      /^[[:space:]]*name[[:space:]]*:/ {
+        value = $0
+        sub(/^[[:space:]]*name[[:space:]]*:[[:space:]]*/, "", value)
+        sub(/[[:space:]]*#.*/, "", value)
+        sub(/[[:space:]]+$/, "", value)
+        print value
+        exit
+      }
+    ' pubspec.yaml)
+  fi
+
+  find "$@" -type f -name "*.dart" -exec awk \
+    -v package_name="$package_name" \
+    -v target_pattern="$target_pattern" \
+    -v allowed_root="$allowed_root" '
       function normalize(path, count, depth, i, segment, result) {
         split("", path_parts)
         count = split(path, path_parts, "/")
@@ -58,11 +68,15 @@ check_1_2() { # presentation 기능 간 직접 import 금지(1.2′)
         return result
       }
 
-      function resolve_import(uri, package_path, slash, source_dir) {
+      function resolve_import(uri, package_path, slash, imported_package, source_dir) {
         if (index(uri, "package:") == 1) {
           package_path = substr(uri, length("package:") + 1)
           slash = index(package_path, "/")
           if (slash == 0) {
+            return ""
+          }
+          imported_package = substr(package_path, 1, slash - 1)
+          if (package_name == "" || imported_package != package_name) {
             return ""
           }
           return normalize("lib/" substr(package_path, slash + 1))
@@ -74,6 +88,10 @@ check_1_2() { # presentation 기능 간 직접 import 금지(1.2′)
         source_dir = FILENAME
         sub("/[^/]*$", "", source_dir)
         return normalize(source_dir "/" uri)
+      }
+
+      function is_under(path, root) {
+        return path == root || index(path, root "/") == 1
       }
 
       /^[[:space:]]*import[[:space:]]/ {
@@ -91,16 +109,29 @@ check_1_2() { # presentation 기능 간 직접 import 금지(1.2′)
         }
 
         target = resolve_import(substr(import_text, 1, quote_end - 1))
-        split("", target_parts)
-        target_count = split(target, target_parts, "/")
-        if (target_count >= 3 &&
-            target_parts[1] == "lib" &&
-            target_parts[2] == boundary &&
-            target_parts[3] != current) {
+        if (target != "" &&
+            target ~ target_pattern &&
+            (allowed_root == "" || !is_under(target, allowed_root))) {
           print FILENAME ":" FNR ":" $0
         }
       }
     ' {} + 2>/dev/null
+  return 0
+}
+
+check_1_1() { # core/shared → app·3레이어 import 금지
+  check_import_targets '^lib/(app|data|domain|presentation)(/|$)' "" \
+    lib/core lib/shared
+  return 0
+}
+
+check_1_2() { # presentation 기능 간 직접 import 금지(1.2′)
+  local f fname
+  for f in lib/presentation/*/; do
+    [ -d "$f" ] || continue
+    fname=$(basename "$f")
+    check_import_targets '^lib/presentation/[^/]+(/|$)' \
+      "lib/presentation/$fname" "$f"
   done
   return 0
 }
@@ -113,17 +144,15 @@ check_1_3() { # domain/shared → Flutter import 금지(shared/widgets 제외)
 }
 
 check_1_4() { # presentation UI·VM → data import 금지(providers 제외)
-  grep -rnE "^[[:space:]]*import[[:space:]].*data/" \
+  check_import_targets '^lib/data(/|$)' "" \
     lib/presentation/*/screens \
     lib/presentation/*/widgets \
-    lib/presentation/*/view_models \
-    --include="*.dart" 2>/dev/null
+    lib/presentation/*/view_models
   return 0
 }
 
 check_1_5() { # domain/shared → data import 금지
-  grep -rnE "^[[:space:]]*import[[:space:]].*data/" \
-    lib/domain lib/shared --include="*.dart" 2>/dev/null
+  check_import_targets '^lib/data(/|$)' "" lib/domain lib/shared
   return 0
 }
 

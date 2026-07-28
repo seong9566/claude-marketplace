@@ -1,3 +1,10 @@
-# flutter create가 만든 .gitignore에 append할 생성물 제외 패턴
+# flutter create가 만든 .gitignore에 append할 항목
+
+# 코드 생성물 — 검사 4.1이 이 두 패턴을 본다
 *.g.dart
 *.freezed.dart
+
+# tool/wt.sh가 만드는 작업 워크트리.
+# .claude/ 자체는 git 추적 대상이지만(검사 §4 — 하네스가 클론에 따라가야 한다)
+# 그 아래 워크트리까지 추적되면 안 된다.
+.claude/worktrees/

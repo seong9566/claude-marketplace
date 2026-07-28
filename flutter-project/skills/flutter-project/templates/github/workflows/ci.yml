@@ -25,7 +25,7 @@ jobs:
 
       # 누락되거나 충돌한 코드 생성물이 후속 검사를 속이지 못하게 다시 만든다.
       - name: Generate code
-        run: dart run build_runner build --delete-conflicting-outputs
+        run: dart run build_runner build
 
       # 타입·lint·아키텍처 분석 오류의 병합을 막는다.
       - name: Analyze

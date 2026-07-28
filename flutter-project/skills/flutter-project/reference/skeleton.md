@@ -278,7 +278,7 @@ dev_dependencies:
 
 **골격에 넣지 않는 것**(프로젝트별 선택): firebase_* · flutter_local_notifications · permission_handler · drift · geolocator · mobile_scanner · local_auth · home_widget 등. 두 repo 다 firebase를 쓰지만 프로젝트마다 설정(`firebase_options.dart`·`google-services.json`)이 달라 골격에서 제외한다.
 
-> 생성물(`*.g.dart`·`*.freezed.dart`)은 gitignore한다. 새 체크아웃은 `flutter pub get && dart run build_runner build --delete-conflicting-outputs`를 먼저 돌려야 `part` 누락 에러가 안 난다.
+> 생성물(`*.g.dart`·`*.freezed.dart`)은 gitignore한다. 새 체크아웃은 `flutter pub get && dart run build_runner build`를 먼저 돌려야 `part` 누락 에러가 안 난다.
 
 ## 7. 하네스 — 구조를 유지시키는 절반
 
@@ -322,7 +322,7 @@ pre-commit에서 `check-architecture.sh`는 staged가 아니라 **lib 전체**�
 | 릴리즈 (`release.yml`) | 태그 `v*` → 버전 산출 → 확인용 APK → GitHub Release **까지만**. 서명·스토어 배포는 넣지 않고 `docs/RELEASE.md`가 필요한 시크릿 이름·선택지만 문서화 | Repo A 실물은 대규모 기존 배포 자동화에 여러 타깃의 서명 예외·배포 채널 선택이 얽혀 있다 — 골격이 정할 문제가 아니다. 다만 "나중에 채우세요" 껍데기는 아무도 안 쓰므로 **설정 없이 도는 범위까지는 완결**시킨다 |
 | ADR (`docs/adr/`) | `README.md`(ADR vs 반복 코딩 규칙 구분·파일명 규칙·상태 전이) + `_template.md`(맥락·결정·근거·영향·출처). 인덱스는 빈 표로 시작 | Repo A 실물 승계. 반복 코딩 규칙은 ADR이 아니라 `docs/ARCHITECTURE.md` 몫 |
 | CLAUDE.md 내용 | 명령어 요약·§4 검사 9종 표·이 문서 링크 + 외부 프로젝트 문서 연동 지침(사용하는 경우). 상세 규칙은 repo의 `docs/ARCHITECTURE.md`로 위임(중복 금지) | CLAUDE.md는 간결하게 유지 |
-| `README.md` | 셋업 3줄: `flutter pub get` → `dart run build_runner build --delete-conflicting-outputs` → `git config core.hooksPath .githooks` | 새 클론이 즉시 구르게 |
+| `README.md` | 셋업 3줄: `flutter pub get` → `dart run build_runner build` → `git config core.hooksPath .githooks` | 새 클론이 즉시 구르게 |
 
 **커버리지 게이트의 사각 — UI.** UI를 %에서 제외하므로(위 "커버리지 제외" 행) 게이트는 UI 회귀에 침묵한다. 보완은 게이트 %가 아니라 (a) 중요 플로우 **위젯 테스트**(어느 플로우가 중요한지는 프로젝트가 정한다), (b) **골든 테스트는 opt-in**(플랫폼 렌더링 차이로 flaky해 강제하지 않는다)이다. 두 기준 repo의 위젯/골든 실태는 미측정이라 골격은 이 스탠스를 *처방*하지 않고 트레이드오프만 명시한다.
 

@@ -33,7 +33,7 @@ jobs:
           echo "Release version: $version"
 
       - run: flutter pub get
-      - run: dart run build_runner build --delete-conflicting-outputs
+      - run: dart run build_runner build
 
       # 서명 설정이 없으면 debug 키로 서명되는 확인용 APK다. 스토어 배포용 산출물이 아니다.
       - name: Build verification APK
@@ -61,7 +61,7 @@ jobs:
           cache: true
 
       - run: flutter pub get
-      - run: dart run build_runner build --delete-conflicting-outputs
+      - run: dart run build_runner build
 
       # App Store Connect 인증과 인증서 복원을 먼저 구성해야 이 단계가 동작한다.
       - name: Build signed IPA

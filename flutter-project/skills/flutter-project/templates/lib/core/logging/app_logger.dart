@@ -4,26 +4,21 @@ import 'package:logger/logger.dart';
 /// 앱 전역 싱글톤 로거.
 /// Debug 빌드에서만 활성화되며 Release에서는 모든 로그가 억제된다.
 class AppLogger {
-  static AppLogger? _instance;
-
-  static AppLogger get instance => _instance ??= AppLogger._();
-
-  late final Logger _logger;
-
   AppLogger._() {
     _logger = Logger(
       filter: kReleaseMode ? _SilentFilter() : DevelopmentFilter(),
       printer: PrettyPrinter(
-        methodCount: 2,
-        errorMethodCount: 8,
-        lineLength: 120,
-        colors: true,
-        printEmojis: true,
         dateTimeFormat: DateTimeFormat.onlyTimeAndSinceStart,
       ),
       output: ConsoleOutput(),
     );
   }
+
+  static AppLogger? _instance;
+
+  static AppLogger get instance => _instance ??= AppLogger._();
+
+  late final Logger _logger;
 
   /// 정상 흐름 (API 호출 시작, SDK 호출 완료 등)
   void info(String message, {Object? error, StackTrace? stackTrace}) =>
