@@ -115,6 +115,9 @@
 │   ├── app/                             # 기본형과 동일 + providers/ 추가
 │   │   └── providers/                   #   전역 상태·DI provider 집중 [T·개명 — Repo A common_providers/]
 │   ├── core/                            # 기본형과 동일
+│   ├── shared/
+│   │   └── widgets/                     # ★기본형과 동일 — 공용 UI 위젯의 유일한 자리
+│   │                                    #   presentation/ 아래에 공용 버킷을 만들지 말 것(아래)
 │   ├── data/
 │   │   ├── datasources/                 #   remote/ · local/
 │   │   ├── models/                      #   *_dto — fromJson/toJson만
@@ -131,7 +134,8 @@
 - **전환 비용이 비대칭 — 애매하면 feature-first**: feature-first → layer-first는 기계적이다(검사 1.2가 슬라이스 간 결합을 0으로 막아둬 domain/data를 루트 레이어로 합치기만 하면 된다). 반대로 layer-first → feature-first는 아프다 — 평면 레이어가 *허용한* 공유(한 usecase를 두 화면이, 한 엔티티를 여럿이 쓰는 결합)를 뒤늦게 소유 기능별로 가르고 떼어내야 한다. 그래서 이 변형은 "단일 bounded context"가 분명할 때만 고르고, 애매하면 되돌리기 쉬운 feature-first를 기본으로 둔다.
 - **provider 배치가 기본형과 반대다**: 화면 전용 ViewModel은 `view_models/` 파일에 두고, 전역 상태·DI는 `app/providers/`에 **집중**한다. 이 변형을 고르는 전제(하나의 핵심 객체를 여러 화면이 공유)에서는 provider 대부분이 전역이라 집중이 자연스럽다 — 기본형의 "기능별 분산" 근거(기능 경계 강화)가 여기선 성립하지 않는다.
 - **검사 1.2′ 신설**: `presentation/<기능>` 간 직접 import 금지. Repo A에 이 검사가 없어서 교차 결합 3건이 샜다(§9) — 공유가 필요하면 view_model을 남의 폴더에 두는 게 아니라 `app/providers/`로 승격한다. 1.1(core 최하층)·1.3(domain 순수)·1.4(UI·VM→data 금지 — `presentation/<기능>/{screens,widgets,view_models}` 기준)·1.5(domain→data 금지)·3.2(Repository 배치)는 경로만 바꿔 그대로 적용.
-- **이음매 ①·②(§3)는 변형에서도 동일하게 성립** — auth가 `features/auth/`가 아니라 `presentation/auth/` + `app/providers/`로 갈릴 뿐, core 빈 슬롯과 app 합성 루트는 같은 자리다. ③(shared kernel)은 변형엔 불필요하다 — `domain/`이 이미 단일 공유 레이어라 공유 도메인이 자연히 거기 산다.
+- **이음매 ①·②(§3)는 변형에서도 동일하게 성립** — auth가 `features/auth/`가 아니라 `presentation/auth/` + `app/providers/`로 갈릴 뿐, core 빈 슬롯과 app 합성 루트는 같은 자리다. ③의 **공유 도메인** 부분만 변형엔 불필요하다 — `domain/`이 이미 단일 공유 레이어라 거기 산다.
+- **공용 UI 위젯은 변형에서도 `lib/shared/widgets/`다 — `presentation/` 아래에 공용 버킷을 만들지 않는다.** 1.2′는 `presentation/<X>`를 예외 없이 전부 기능으로 취급하므로, `presentation/shared/`·`presentation/common/` 같은 폴더를 만들면 **그것을 쓰는 모든 화면이 위반으로 잡힌다**(Repo A 실측 8건이 정확히 이 형태였다 — §9). 정상 코드를 잡는 게이트는 사람이 꺼버리므로 §7 전체가 무력해진다. 공용 위젯은 `presentation/` **밖**인 `shared/widgets/`에 두고, 거기서만 Flutter import가 허용된다(§4 1.3 예외).
 
 ### 모듈화 천장 — 단일 패키지를 넘을 때 (v1 범위 밖)
 

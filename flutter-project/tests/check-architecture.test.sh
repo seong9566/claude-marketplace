@@ -167,6 +167,17 @@ assert_1_2_fails \
   "lib/presentation/home/screens/home_screen.dart" \
   "import 'package:example/presentation/auth/screens/login_screen.dart';"
 
+# presentation/ 의 자식은 예외 없이 전부 기능이다 — shared·common 같은 공용 버킷을
+# 그 아래 만들면 그것을 쓰는 모든 화면이 위반으로 잡힌다(골격 §2 변형의 경고).
+# 공용 위젯의 자리는 presentation/ 밖 lib/shared/widgets/ 이며, 아래
+# layered-shared-widget-imports 케이스가 그쪽이 통과함을 함께 고정한다.
+# 이 케이스가 깨지면 1.2′ 에 이름 기반 예외가 뚫린 것이다 — 문서를 먼저 고칠 것.
+assert_1_2_fails \
+  "layered-presentation-shared-bucket-is-not-exempt" \
+  "$LAYERED_HOOK" \
+  "lib/presentation/home/screens/home_screen.dart" \
+  "import '../../shared/app_dialog.dart';"
+
 assert_1_2_passes \
   "layered-allowed-imports" \
   "$LAYERED_HOOK" \
