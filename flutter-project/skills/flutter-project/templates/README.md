@@ -29,6 +29,18 @@
 아래 파일은 새 repo의 `lib/`로 복사한다. Repo A의 `core/error/`에서 온
 파일도 생성 대상에서는 `core/errors/` 복수형으로 고정한다.
 
+**두 분할축 모두 이 템플릿을 그대로 쓴다** — 동봉된 `lib/`는 `core/`·`app/`·
+`main.dart`뿐이고 이들은 feature-first와 layer-first가 공유하는 부분이다.
+갈리는 자리는 템플릿에 없으며 스캐폴딩 시 생성된다:
+
+| 판정 | 생성되는 자리 | 추가 |
+|---|---|---|
+| feature-first | `lib/features/<기능>/{presentation,domain,data}/` | — |
+| layer-first | `lib/{data,domain,presentation/<기능>}/` (루트 3레이어) | `lib/app/providers/` (전역 상태·DI 집중) |
+
+`shared/widgets/`는 양쪽 공통이다. 자세한 트리는 골격 정본 §2와 그 말미의
+layer-first 변형 절을 따른다.
+
 | 템플릿 | 출처 | 템플릿에서의 처리 |
 |---|---|---|
 | `lib/main.dart` | Repo B `lib/main.dart` | `bootstrapApp()` 진입점에 맞춰 연결 |

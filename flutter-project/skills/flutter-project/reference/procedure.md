@@ -15,21 +15,36 @@ PRD·기능정의서를 읽고 아키텍처(feature-first vs layer-first)를 판
 기획 문서가 있으면 거기서 추출한다:
 
 - **제품 기능 목록** — 화면 수가 아니라 **PRD의 기능 정의 기준**. 스플래시·온보딩·설정 같은 부속 화면은 기능으로 세지 않는다.
-- **기능 간 데이터 공유 관계** — 여러 화면이 같은 핵심 객체(세션·카드·장치)를 보는가.
+- **기능 간 데이터 공유 관계 — 읽기와 쓰기를 반드시 구분한다.** 여러 화면이 같은 객체를 *읽기만* 하는지 *바꾸기도* 하는지가 판정을 가른다. 뭉뚱그려 "공유한다"로 적으면 아래 오판이 난다.
+  - **읽기 전용 공유**(세션 토큰·앱 설정·마스터 데이터) → 분할축 신호가 **아니다**. 이음매 ①(core 빈 슬롯)로 푼다. **거의 모든 앱에 있으므로 이걸 layer-first 근거로 삼지 말 것** — 가장 흔한 오판 경로다.
+  - **쓰기 공유**(한 화면의 변경이 다른 화면에 즉시 반영돼야 함) → 이것이 "리치 가변 공유"이고 layer-first 신호다.
 - **성장 신호** — PRD의 로드맵/Phase 항목.
 
 문서가 신호를 주면 그 항목은 3에서 묻지 않는다(판정 근거로 인용만).
 
 ## 3. 판정 인터뷰 (AskUserQuestion — 문서가 못 채운 것만)
 
-| # | 질문 | 역할 |
+**사용자에게 "리치 가변 핵심 객체를 공유하나요"라고 묻지 않는다.** 그건 질문이 아니라 답이다 — 그 용어로 자기 앱을 분류할 수 있는 사람은 이미 판정을 아는 사람이고, 모르는 사람은 찍는다. 사용자에게는 **자기 제품에 대해 사실로 답할 수 있는 것**만 묻고, bounded context 결합도로의 번역은 스킬이 한다.
+
+| # | 질문 | 판별하는 것 |
 |---|---|---|
-| Q1 | 화면들이 각자 독립 데이터·플로우인가, 하나의 리치 가변 핵심 객체를 공유하는가? | **지배 신호**(bounded context 결합도) |
-| Q2 | 출시 시점 제품 기능 수 + 1년 내 추가 전망? | 강한 proxy(대개 Q1과 일치) |
-| Q3 | 여러 세션/사람이 기능별 병렬 작업하나? | 보조 |
+| Q1a | 한 화면에서 무언가 바꾸면 **다른 화면이 즉시 달라져야 하는** 경우가 있나? 있다면 어떤 화면들이고 무엇이 바뀌나? | 가변 공유의 **존재와 범위** |
+| Q1b | 그 대상을 각 화면이 **읽기만** 하나, **바꾸기도** 하나? | read-mostly vs 리치 가변 |
+| Q1c | 그게 앱에서 사라지면 **몇 개 화면이 의미를 잃나**? | **지배** 여부(단일 bounded context) |
+| Q2 | 출시 시점 기능 수 + 1년 내 추가 전망 | **약한** proxy — 확인용이지 판정 근거가 아니다(골격 §1) |
+| Q3 | 여러 세션·사람이 기능별 병렬 작업하나? | 보조 |
 | Q4 | 기능 단위 on/off·실험·모듈 분리 전망? | 보조 |
 
-**지배 신호가 판정을 확정하면 남은 문항은 묻지 않는다** — 기능들이 독립 bounded context임(핵심 객체 비공유)이 문서로 확인되면 feature-first 확정, Q2~Q4는 노이즈다(잘 문서화된 프로젝트는 인터뷰 0문항이 정상이다). Q1(결합도)과 Q2(기능 수)가 엇갈릴 때만 — 4+ 기능인데 하나의 리치 가변 객체를 공유하거나, 2~3개인데 완전 독립 — Q1이 이긴다. 기능 수는 결합도의 proxy일 뿐 판정 기준이 아니다.
+**스킬이 수행하는 매핑** — Q1a~c의 사실 답을 판정으로 번역한다:
+
+| Q1a | Q1b | Q1c | 판정 |
+|---|---|---|---|
+| 없다 | — | — | **feature-first 확정** (독립 bounded context) |
+| 있다 | 읽기만 | — | **feature-first** + 그 값은 이음매 ①/③으로(골격 §3) |
+| 있다 | 바꾸기도 | 대부분의 화면 | **layer-first 변형** (단일 bounded context) |
+| 있다 | 바꾸기도 | 소수 화면 | **애매 → §4 tie-breaker** |
+
+**지배 신호가 확정되면 남은 문항은 묻지 않는다** — Q1a가 "없다"로 문서에서 확인되면 feature-first 확정이고 Q2~Q4는 노이즈다(잘 문서화된 프로젝트는 인터뷰 0문항이 정상이다). Q1과 Q2(기능 수)가 엇갈리면 **언제나 Q1이 이긴다** — 4+ 기능인데 리치 가변 공유가 지배하면 layer-first고, 2~3개인데 완전 독립이면 feature-first다.
 
 ## 4. 판정 규칙 (rubric)
 
@@ -37,7 +52,7 @@ PRD·기능정의서를 읽고 아키텍처(feature-first vs layer-first)를 판
 |---|---|
 | 기능들이 각자 독립 bounded context(리치 가변 핵심 객체 비공유) | **feature-first** — 기능 4+·성장 예정이면 이 신호가 굳는다. 값객체·read-mostly 공유는 shared/ 커널로(골격 §3③) |
 | 하나의 리치 가변 핵심 객체를 모든 화면이 공유(단일 bounded context) | **layer-first 변형**(골격 §2 말미) — 전형적으로 기능 2~3개 고정 |
-| 애매 | 결합도가 가른다(기능 수 아님): 공유가 값객체·read-mostly면 feature-first + shared/ / 리치 가변 공유가 지배면 layer-first |
+| **애매 — 판별이 안 선다** | **feature-first를 고른다.** 전환 비용이 비대칭이라(골격 §2 변형) feature-first → layer-first는 기계적이고 그 반대는 아프다. **확신 없이 layer-first를 고르는 쪽이 확신 없이 feature-first를 고르는 쪽보다 비싸다** — 이것이 tie-breaker이며, "결합도를 다시 보라"는 답이 아니다(그걸 못 봐서 애매에 온 것이다) |
 
 보정 기준(rubric을 바꿀 때 검산용, 골격 §9의 두 기준 repo): Repo B(기능 5개가 서로 독립 context) → feature-first ✓ / Repo A(리치 가변 핵심 객체 하나를 두 화면이 공유·지배 = 단일 bounded context) → layer-first ✓. 두 사례 모두 **결합도가 판정을 몰고 기능 수(5 vs 2)는 결과와 일치할 뿐이다** — 기능 수를 기준으로 삼지 말 것.
 
@@ -53,13 +68,15 @@ PRD·기능정의서를 읽고 아키텍처(feature-first vs layer-first)를 판
 
 1. `flutter create --org <org> --project-name <이름> --platforms=android,ios <경로>`
 2. 골격 정본 §2(또는 변형)·§6(의존성 — **재계산 금지, 목록 그대로**)·§8(결정 표)대로 파일 작성. `[T]` 태그 파일은 이 스킬의 `templates/` 실물을 읽어 패키지명만 바꿔 이식하고, `[신작]`은 §8 구성대로 작성한다. 실제 feature와 `test/` 미러, `docs/ARCHITECTURE.md`, `pubspec.yaml`은 템플릿에 없으므로 스캐폴딩 시 PRD와 골격 정본에 맞춰 생성한다. PM vault를 함께 쓰는 경우에만, 새 repo `CLAUDE.md`에 해당 vault의 핸드오프 지침을 연결하는 선택 단계를 수행한다.
-3. `git init`. **hooksPath·초기 커밋은 아직** — 게이트(6.4)를 통과한 뒤 6.5에서 한다.
-4. **검증 게이트(전부 통과해야 완료)**: `flutter pub get` → `dart run build_runner build --delete-conflicting-outputs` → `flutter analyze`(0 issues) → `flutter test` → `.claude/hooks/check-architecture.sh --report`(9종 PASS). **게이트가 실패하면** 그 자리에서 고쳐 남은 게이트만 이어 재실행한다 — repo가 이미 있어 스킬을 다시 부르면 1(연결)에서 abort되므로 **재-invoke 금지**(부분 실패 복구는 수동).
-5. `git config core.hooksPath .githooks` → **초기 커밋 1개**(scaffold). 게이트 통과·codegen 산출 뒤에 커밋하므로 pre-commit(`check-architecture.sh` + `check.mjs --staged`)이 생성물 부재로 막히지 않는다.
+3. **판정을 ADR로 기록한다** — `docs/adr/0001-architecture-<feature-first|layer-first>.md`를 `_template.md` 형식으로 쓰고 인덱스 표에 한 줄 등록한다. 맥락=제품 기능과 공유 관계 / 결정=채택한 분할축 / **근거=Q1a~c의 답과 인용한 기획 문서 대목 + 버린 쪽을 버린 이유** / 영향=적용되는 검사 경로(1.2 또는 1.2′)와 이음매 사용 방식. 판정은 이 스킬의 존재 이유인데 기록하지 않으면 몇 달 뒤 "왜 이 구조인가"에 답할 근거가 사라진다 — ADR 폴더를 빈 채로 넘기지 않는다.
+4. `git init`. **hooksPath·초기 커밋은 아직** — 게이트(6.5)를 통과한 뒤 6.6에서 한다.
+5. **검증 게이트(전부 통과해야 완료)**: `flutter pub get` → `dart run build_runner build --delete-conflicting-outputs` → `flutter analyze`(0 issues) → `flutter test` → `.claude/hooks/check-architecture.sh --report`(9종 PASS). **게이트가 실패하면** 그 자리에서 고쳐 남은 게이트만 이어 재실행한다 — repo가 이미 있어 스킬을 다시 부르면 1(연결)에서 abort되므로 **재-invoke 금지**(부분 실패 복구는 수동).
+6. `git config core.hooksPath .githooks` → **초기 커밋 1개**(scaffold). 게이트 통과·codegen 산출 뒤에 커밋하므로 pre-commit(`check-architecture.sh` + `check.mjs --staged`)이 생성물 부재로 막히지 않는다.
 
 ## 7. 완료 보고
 
 - 생성 트리 + 검증 결과. **원격(GitHub) 생성·push는 하지 않는다** — 사용자 판단.
+- **채택한 분할축과 그 근거**, 그리고 그것이 `docs/adr/0001-*.md`에 기록됐음을 알린다. 적용된 검사 경로(1.2 또는 1.2′)도 함께 — 이용자가 나중에 구조를 바꾸려 할 때 무엇이 따라 바뀌는지 알아야 한다.
 
 ## 주의
 
