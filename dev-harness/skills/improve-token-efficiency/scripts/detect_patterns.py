@@ -26,12 +26,17 @@ import os
 import sys
 from collections import defaultdict
 
-# Pricing (USD per 1M tokens). We price waste at Opus rates; if the actual
-# session was Sonnet, the dollar number is overstated by ~5x — but Sonnet
-# sessions are also cheap so the overall % impact is roughly right.
-OPUS_READ = 1.50
-OPUS_W1H = 30.00
-OPUS_OUT = 75.00
+# Pricing (USD per 1M tokens), current Opus (5 / 4.8 / 4.7 / 4.6 all share these).
+# NOT the retired Opus 4 / 4.1 rates ($15 in / $75 out) — those were 3x these and
+# pricing waste at them inflated every dollar figure here threefold.
+#
+# Waste is priced at Opus rates regardless of the session's actual model, so the
+# figure is directional, not exact: a Sonnet 5 session is overstated ~2.5x on
+# cache reads, and a Fable 5 session is *understated* ~2x. Read these as relative
+# magnitudes between patterns, not as an invoice.
+OPUS_READ = 0.50
+OPUS_W1H = 10.00
+OPUS_OUT = 25.00
 
 # Thresholds (from the user's spec)
 CONTEXT_HIGH_TOKENS = 100_000          # P1: "context exceeds 100k"

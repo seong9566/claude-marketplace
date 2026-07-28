@@ -22,22 +22,39 @@ from collections import defaultdict
 # CLI records in `message.model`. Add new rows when new models ship.
 # Prices per 1M tokens (USD). Cache multipliers follow Anthropic's standard:
 # 5m write = 1.25x input, 1h write = 2x input, cache read = 0.1x input.
-# Opus 4.5+ is $5/$25 (older 4.0/4.1 were $15/$75). Sonnet 5 shows sticker $3/$15
-# (intro $2/$10 through 2026-08-31 not encoded — keep the dict time-independent).
+# Sticker prices per MTok, from the official pricing page. Opus 4.5+ and Opus 5
+# are all $5/$25 (older 4.0/4.1 were $15/$75). Time-dependent prices live in
+# DATED_PRICING below, not here.
 PRICING = {
+    "claude-opus-5":     {"in":  5.00, "out": 25.00, "cw5":  6.25, "cw1h": 10.00, "cr": 0.50},
     "claude-opus-4-8":   {"in":  5.00, "out": 25.00, "cw5":  6.25, "cw1h": 10.00, "cr": 0.50},
     "claude-opus-4-7":   {"in":  5.00, "out": 25.00, "cw5":  6.25, "cw1h": 10.00, "cr": 0.50},
     "claude-opus-4-6":   {"in":  5.00, "out": 25.00, "cw5":  6.25, "cw1h": 10.00, "cr": 0.50},
     "claude-fable-5":    {"in": 10.00, "out": 50.00, "cw5": 12.50, "cw1h": 20.00, "cr": 1.00},
+    "claude-mythos-5":   {"in": 10.00, "out": 50.00, "cw5": 12.50, "cw1h": 20.00, "cr": 1.00},
     "claude-sonnet-5":   {"in":  3.00, "out": 15.00, "cw5":  3.75, "cw1h":  6.00, "cr": 0.30},
     "claude-sonnet-4-6": {"in":  3.00, "out": 15.00, "cw5":  3.75, "cw1h":  6.00, "cr": 0.30},
     "claude-sonnet-4-5": {"in":  3.00, "out": 15.00, "cw5":  3.75, "cw1h":  6.00, "cr": 0.30},
     "claude-haiku-4-5":  {"in":  1.00, "out":  5.00, "cw5":  1.25, "cw1h":  2.00, "cr": 0.10},
     "<synthetic>":       {"in":  0.00, "out":  0.00, "cw5":  0.00, "cw1h":  0.00, "cr": 0.00},
 }
-# Opus default for unknown models (conservative = higher estimate, so the
-# report doesn't silently under-report cost).
-DEFAULT_PRICE = PRICING["claude-opus-4-6"]
+
+# Prices that changed on a date. A session is billed at the rate in effect when
+# it ran, so the price has to be picked per record timestamp — not per report run.
+# Sonnet 5 launched at introductory $2/$10 and moves to sticker $3/$15 on
+# 2026-09-01; without this, every pre-September Sonnet 5 session over-reports 1.5x.
+# Each entry: (model prefix, ISO date the sticker price takes effect, intro price).
+DATED_PRICING = [
+    ("claude-sonnet-5", "2026-09-01",
+     {"in": 2.00, "out": 10.00, "cw5": 2.50, "cw1h": 4.00, "cr": 0.20}),
+]
+
+# Fallback for models this table has never heard of. Deliberately the most
+# EXPENSIVE row, so an unrecognized model over-reports rather than under-reports
+# — a cost report that quietly undercounts is worse than one that overcounts.
+# Derived, not hardcoded: pinning a specific row silently stops being the
+# maximum as soon as a pricier model is added.
+DEFAULT_PRICE = max(PRICING.values(), key=lambda p: p["out"])
 
 
 def encode_repo_path(repo_path):
@@ -58,7 +75,18 @@ def resolve_sessions_dir(args):
     return os.path.expanduser(f"~/.claude/projects/{encoded}")
 
 
-def price_for(model):
+def price_for(model, ts=None):
+    """Price row for a model, as of the record's timestamp.
+
+    `ts` is an ISO 8601 string from the session record (e.g.
+    "2026-07-28T05:22:25.814Z"). ISO dates sort lexicographically, so the
+    first 10 chars compare directly against the cutover date — no parsing,
+    no dependency. A missing ts falls back to sticker price.
+    """
+    if model:
+        for prefix, effective_from, intro in DATED_PRICING:
+            if model.startswith(prefix) and ts and ts[:10] < effective_from:
+                return intro
     if model in PRICING:
         return PRICING[model]
     # Dated snapshot IDs (e.g. claude-haiku-4-5-20251001) share their base alias's price
@@ -68,7 +96,8 @@ def price_for(model):
                 return PRICING[key]
     # Warn once per unknown model
     if model and model not in price_for._warned:
-        print(f"[warn] unknown model: {model}, applying Opus default pricing", file=sys.stderr)
+        print(f"[warn] unknown model: {model}, applying most-expensive-row pricing "
+              f"(${DEFAULT_PRICE['in']}/${DEFAULT_PRICE['out']} per MTok)", file=sys.stderr)
         price_for._warned.add(model)
     return DEFAULT_PRICE
 price_for._warned = set()
@@ -131,7 +160,7 @@ def analyze_session(path):
                     if model:
                         stats["models"].add(model)
                     usage = msg.get("usage", {})
-                    price = price_for(model)
+                    price = price_for(model, ts)
 
                     inp = usage.get("input_tokens", 0)
                     out = usage.get("output_tokens", 0)
