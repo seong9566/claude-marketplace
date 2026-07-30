@@ -39,6 +39,18 @@ PRICING = {
     "<synthetic>":       {"in":  0.00, "out":  0.00, "cw5":  0.00, "cw1h":  0.00, "cr": 0.00},
 }
 
+# The single source of truth for the sibling scripts' "priced at Opus rates"
+# estimates. They import these instead of re-typing the numbers — three separate
+# copies existed before and two of them drifted 3x (retired 4.0/4.1 rates).
+OPUS = PRICING["claude-opus-5"]
+SONNET = PRICING["claude-sonnet-5"]
+
+
+def format_price(value):
+    """Render a rate the way the reports write it: $6.25 but $5, not $5.00."""
+    return f"{value:.2f}" if value % 1 else f"{value:.0f}"
+
+
 # Prices that changed on a date. A session is billed at the rate in effect when
 # it ran, so the price has to be picked per record timestamp — not per report run.
 # Sonnet 5 launched at introductory $2/$10 and moves to sticker $3/$15 on

@@ -10,6 +10,7 @@ import argparse
 import json
 import os
 import sys
+from analyze_sessions import OPUS, format_price
 
 PATTERN_KO_NAME = {
     "context_bloat": "컨텍스트 부풀림",
@@ -23,7 +24,7 @@ PATTERN_META = {
     "context_bloat": {
         "title": "1. 컨텍스트 창이 무한정 부풀어 오름",
         "rule": "컨텍스트 100k 토큰 초과가 연속 20+ turn 이어지고, 그 사이 50% 이상 감소(=compact)가 없음.",
-        "formula": "낭비 = Σ max(0, 컨텍스트 − 80k) × cache_read 단가 ($1.50/M).",
+        "formula": f"낭비 = Σ max(0, 컨텍스트 − 80k) × cache_read 단가 (${format_price(OPUS['cr'])}/M).",
         "fix_code": """# CLAUDE.md 에 명시
 누적 입력이 200k 를 넘으면 진행 전에 /compact 실행.
 주제가 바뀌면 새 세션 시작 — CLAUDE.md 와 MEMORY.md 가
@@ -59,7 +60,7 @@ psql -c 'SELECT count(*) FROM x'      # SELECT * 지양
     "duplicate_tools": {
         "title": "4. 동일한 도구 호출이 그대로 반복됨",
         "rule": "SHA-256(tool_name, input) 가 동일한 호출 — 같은 호출을 또 함.",
-        "formula": "낭비 = 결과_토큰 × cache_write 단가 ($30/M, 결과가 컨텍스트에 재진입하므로).",
+        "formula": f"낭비 = 결과_토큰 × cache_write 단가 (${format_price(OPUS['cw1h'])}/M, 결과가 컨텍스트에 재진입하므로).",
         "fix_code": """# Read/Grep/Bash 를 다시 부르기 전에 자문
 - 이 답이 대화 위쪽에 이미 있지 않나?
 - 마지막 Read 이후 파일이 정말 바뀌었나?
@@ -73,7 +74,7 @@ psql -c 'SELECT count(*) FROM x'      # SELECT * 지양
     "subagent_overuse": {
         "title": "5. Task / 서브에이전트 과다 위임",
         "rule": "Agent 호출 5회 이상 + 평균 결과 ≤ 2k 토큰 (= 각 작업이 ≤3 turn 수준의 사소한 작업).",
-        "formula": "낭비 = 호출 수 × 서브에이전트당 약 3k 오버헤드 × write 단가 ($30/M).",
+        "formula": f"낭비 = 호출 수 × 서브에이전트당 약 3k 오버헤드 × write 단가 (${format_price(OPUS['cw1h'])}/M).",
         "fix_code": """# 서브에이전트 사용 기준
 - 인라인으로: 단일 파일 조회, 단순 Grep, "package.json 안 보기"
 - 서브에이전트로: 다단계 리서치, 병렬 작업, 대용량 컨텍스트 탐색
@@ -276,7 +277,7 @@ def build_html(data):
 
   <div class="footer">
     위 탐지 규칙과 계산식은 결정론적입니다 — 같은 입력에 대해 항상 같은 낭비액이 산출됩니다.<br>
-    가격 기준: Opus 4.x (1M 토큰당 read $1.50 / write 1h $30 / output $75).
+    가격 기준: Opus 5 (1M 토큰당 read ${format_price(OPUS['cr'])} / write 1h ${format_price(OPUS['cw1h'])} / output ${format_price(OPUS['out'])}). 세션의 실제 모델과 무관하게 Opus 단가로 환산한 상대적 크기입니다.
   </div>
 
 <script>

@@ -9,16 +9,18 @@ import json
 import os
 import sys
 from collections import Counter
+from analyze_sessions import PRICING, OPUS, SONNET, format_price
 
-# Must mirror analyze_sessions.py. Only used here for dollar-value estimates in
-# the improvement cards (not for primary cost calculation, which already lives
-# in the per-session `cost_usd`).
-OPUS_IN = 5.0
-OPUS_OUT = 25.0
-OPUS_W5 = 6.25
-OPUS_W1H = 10.0
-OPUS_READ = 0.50
-SONNET_RATIO = 1.67  # Opus ($5/$25) / Sonnet ($3/$15) blended multiplier
+# Only used here for dollar-value estimates in the improvement cards (not for
+# primary cost calculation, which already lives in the per-session `cost_usd`).
+OPUS_IN = OPUS["in"]
+OPUS_OUT = OPUS["out"]
+OPUS_W5 = OPUS["cw5"]
+OPUS_W1H = OPUS["cw1h"]
+OPUS_READ = OPUS["cr"]
+# Opus/Sonnet blended cost multiplier. in and out currently share the same
+# 5:3 ratio; output dominates real spend, so derive from it.
+SONNET_RATIO = OPUS["out"] / SONNET["out"]
 
 
 def compute_savings(totals, sessions):
@@ -78,6 +80,21 @@ def build_html(data, repo_name):
     savings = compute_savings(totals, sessions)
     total_savings = sum(savings.values())
     save_pct = total_savings / totals["cost_usd"] * 100 if totals["cost_usd"] else 0
+
+    footer_models = {
+        "claude-opus-5": "Opus 5",
+        "claude-fable-5": "Fable 5",
+        "claude-sonnet-5": "Sonnet 5",
+        "claude-haiku-4-5": "Haiku 4.5",
+    }
+    pricing_footer = " · ".join(
+        f"{footer_models[model]} (${format_price(PRICING[model]['in'])} / "
+        f"${format_price(PRICING[model]['out'])} / "
+        f"${format_price(PRICING[model]['cw5'])} / "
+        f"${format_price(PRICING[model]['cw1h'])} / "
+        f"${format_price(PRICING[model]['cr'])})"
+        for model in footer_models
+    )
 
     # score component averages
     score_comp_avg = {
@@ -265,7 +282,7 @@ def build_html(data, repo_name):
     <div class="imp">
       <div class="h"><div class="t">1. Opus → Sonnet 라우팅 (작업 난이도별)</div><div class="s">~${savings['model_routing']:.0f} (~{savings['model_routing']/totals['cost_usd']*100:.0f}%)</div></div>
       <p>간단한 리팩터/리드/테스트 실행은 Sonnet으로 이관. <code>/fast</code> 토글 또는 <code>--model sonnet</code> 세션.</p>
-      <p><b>Why:</b> Opus($5/$25) ≈ Sonnet($3/$15) × 1.7. 30% 다운그레이드 시 그만큼 절감.</p>
+      <p><b>Why:</b> Opus(${format_price(OPUS['in'])}/${format_price(OPUS['out'])}) ≈ Sonnet(${format_price(SONNET['in'])}/${format_price(SONNET['out'])}) × {SONNET_RATIO:.1f}. 30% 다운그레이드 시 그만큼 절감.</p>
     </div>
     <div class="imp">
       <div class="h"><div class="t">2. 장시간 세션 <code>/compact</code> 적극 사용</div><div class="s">~${savings['compact']:.0f}</div></div>
@@ -279,7 +296,7 @@ def build_html(data, repo_name):
     </div>
     <div class="imp">
       <div class="h"><div class="t">4. Cache TTL 1h → 5m 전환</div><div class="s">~${savings['ttl']:.0f}</div></div>
-      <p>짧은 세션엔 1h 프리미엄($10/M) 불필요. 5m($6.25/M)로 충분. <code>ANTHROPIC_CACHE_TTL=5m</code> env 설정.</p>
+      <p>짧은 세션엔 1h 프리미엄(${format_price(OPUS_W1H)}/M) 불필요. 5m(${format_price(OPUS_W5)}/M)로 충분. <code>ANTHROPIC_CACHE_TTL=5m</code> env 설정.</p>
       <p><b>Why:</b> 1h 프리미엄은 30분+ 세션에서만 회수. 단기 세션엔 순수 낭비.</p>
     </div>
     <div class="imp">
@@ -310,7 +327,7 @@ def build_html(data, repo_name):
   </div>
 
   <div class="footer">
-    가격 기준: 1M 토큰당 (입력 / 출력 / 캐시쓰기 5m / 캐시쓰기 1h / 캐시읽기) · Opus 4.8 ($5 / $25 / $6.25 / $10 / $0.50) · Fable 5 ($10 / $50 / $12.50 / $20 / $1) · Sonnet 5 ($3 / $15 / $3.75 / $6 / $0.30) · Haiku 4.5 ($1 / $5 / $1.25 / $2 / $0.10). 비용 내역 도넛은 전 모델을 Opus 가로 근사; 세션별 합계는 모델별 정확 계산.
+    가격 기준: 1M 토큰당 (입력 / 출력 / 캐시쓰기 5m / 캐시쓰기 1h / 캐시읽기) · {pricing_footer}. 비용 내역 도넛은 전 모델을 Opus 가로 근사; 세션별 합계는 모델별 정확 계산.
   </div>
 
 <script>

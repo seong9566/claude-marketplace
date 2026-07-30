@@ -85,23 +85,24 @@ HTML을 연 뒤 Korean 으로 최상위 수치와 가장 큰 개선 3가지를 2
 
 ## 가격 기준 (per 1M tokens, USD)
 
-스크립트에 하드코딩된 기본값. 새 모델이 나오면 `scripts/analyze_sessions.py` 상단 `PRICING` dict 수정.
+단가의 정본은 `scripts/analyze_sessions.py` 의 `PRICING` dict다. 다른 스크립트는 전부 이 dict를 import하므로, 새 모델이 나오면 그 dict에만 행을 추가하면 된다.
 
-| Model | Input | Output | Cache write 5m | Cache write 1h | Cache read |
-|---|---|---|---|---|---|
-| Opus 4.x (`claude-opus-4-6`, `claude-opus-4-7`) | 15.0 | 75.0 | 18.75 | 30.0 | 1.50 |
-| Sonnet 4.x (`claude-sonnet-4-6`) | 3.0 | 15.0 | 3.75 | 6.0 | 0.30 |
-| Haiku 4.x (`claude-haiku-4-5-*`) | 0.80 | 4.0 | 1.0 | 1.6 | 0.08 |
-| `<synthetic>` | 0 | 0 | 0 | 0 | 0 |
+현재 등재된 모델 계열은 Opus 5 / 4.8 / 4.7 / 4.6 · Fable 5 · Mythos 5 · Sonnet 5 / 4.6 / 4.5 · Haiku 4.5 · `<synthetic>`다.
+
+캐시 배수는 가격이 바뀌어도 불변이다: 5m write = input × 1.25, 1h write = input × 2, cache read = input × 0.1.
+
+`DATED_PRICING` 에 등록된 모델은 세션 기록 시각에 따라 당시 단가를 선택한다.
+
+미등록 모델은 `DEFAULT_PRICE`(가장 비싼 행)로 과대 계상된다.
 
 ## 개선안 산정 로직
 
 `build_dashboard.py` 가 6가지 휴리스틱으로 예상 절감을 계산한다. 보수적으로 단순 합산이 전체 비용의 40–50%를 넘으면 단일 카드에 "중복 고려 시 실제로는 30–40% 수준" 주석을 붙인다.
 
-1. **Opus → Sonnet 라우팅**: 전체의 30%를 Sonnet으로 이관한다고 가정 → `cost × 0.3 × (1 − 1/5)` 절감. Opus/Sonnet 비용비 약 5배.
+1. **Opus → Sonnet 라우팅**: 전체의 30%를 Sonnet으로 이관한다고 가정 → `cost × 0.3 × (1 − 1/SONNET_RATIO)` 절감. 비율은 `build_dashboard.py` 의 `SONNET_RATIO` 상수에서 유도한다.
 2. **장시간 세션 `/compact`**: 상위 14개 세션(Pareto 기준)의 `cache_read` 의 30% 감소 가정.
 3. **이미지 세션 관리**: 이미지 포함 세션에서 장당 ~40k 토큰이 세션 내내 유지된다고 보고, 이의 50%가 컴팩션으로 사라지는 경우.
-4. **Cache TTL 1h → 5m**: 전체 1h 캐시 쓰기의 40%가 5m 로 충분하다고 가정 → `× ($30 − $18.75) / $30` 절감.
+4. **Cache TTL 1h → 5m**: 전체 1h 캐시 쓰기의 40%가 5m 로 충분하다고 가정 → `× (OPUS_W1H − OPUS_W5) / OPUS_W1H` 절감.
 5. **세션 scope 축소**: 상위 14개 외 세션의 `cache_read` 15% 감소 가정.
 6. **중복 Read 제거**: `redundant_reads × 3000토큰 × (cache write + 10 re-read)` 비용.
 
@@ -111,7 +112,7 @@ HTML을 연 뒤 Korean 으로 최상위 수치와 가장 큰 개선 3가지를 2
 
 - **세션 디렉터리가 없다**: 레포가 Claude Code 로 한 번도 열린 적 없는 경우. "분석할 세션 없음" 안내하고 종료.
 - **모든 세션이 빈 usage**: 아주 오래된 CLI 버전일 수 있음. 스크립트가 자동으로 걸러내고 남은 게 없으면 종료.
-- **가격 미등록 모델**: 기본값으로 Opus 가격 적용하고, 콘솔에 `[warn] unknown model: <id>, applying Opus default` 출력.
+- **가격 미등록 모델**: `PRICING` 중 가장 비싼 행(`DEFAULT_PRICE`)을 적용하고, stderr 에 `[warn] unknown model: <id>, applying default ($…/$… per MTok)` 출력.
 - **Python 3.9+**: dataclass / walrus 사용 없음, 순수 stdlib 만 필요. pip install 불필요.
 - **Chart.js CDN 의존**: 오프라인 환경이면 `--inline-chartjs` 옵션으로 로컬 복사본 사용 가능 (스크립트가 지원).
 

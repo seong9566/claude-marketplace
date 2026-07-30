@@ -25,18 +25,21 @@ import json
 import os
 import sys
 from collections import defaultdict
+# encode_repo_path is imported, not re-implemented: the local copy replaced only
+# "/" and so missed "_" and ".", making --repo silently miss every repo whose
+# path contains either.
+from analyze_sessions import OPUS, encode_repo_path
 
 # Pricing (USD per 1M tokens), current Opus (5 / 4.8 / 4.7 / 4.6 all share these).
-# NOT the retired Opus 4 / 4.1 rates ($15 in / $75 out) — those were 3x these and
-# pricing waste at them inflated every dollar figure here threefold.
+# Values come from analyze_sessions.PRICING via its exported OPUS row.
 #
 # Waste is priced at Opus rates regardless of the session's actual model, so the
 # figure is directional, not exact: a Sonnet 5 session is overstated ~2.5x on
 # cache reads, and a Fable 5 session is *understated* ~2x. Read these as relative
 # magnitudes between patterns, not as an invoice.
-OPUS_READ = 0.50
-OPUS_W1H = 10.00
-OPUS_OUT = 25.00
+OPUS_READ = OPUS["cr"]
+OPUS_W1H = OPUS["cw1h"]
+OPUS_OUT = OPUS["out"]
 
 # Thresholds (from the user's spec)
 CONTEXT_HIGH_TOKENS = 100_000          # P1: "context exceeds 100k"
@@ -53,10 +56,6 @@ CONTEXT_FLOOR_FOR_CACHE = 30_000       # P3: context > 30k
 SUBAGENT_MIN_CALLS = 5                 # P5: ≥ 5 Task calls
 TRIVIAL_RESULT_TOKENS = 2000           # P5: avg result ≤ 2k → ≤3 turns proxy
 SUBAGENT_OVERHEAD_TOKENS = 3000        # P5: per-call system prompt + framing
-
-
-def encode_repo_path(p):
-    return os.path.abspath(os.path.expanduser(p)).replace("/", "-")
 
 
 def stringify(obj):
