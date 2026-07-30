@@ -2,7 +2,10 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    # dev 가 먼저다. 이 템플릿의 브랜치 모델에서 기능·버그는 전부 dev 로 PR 되고
+    # (githooks/pre-push 가 main 직접 push 를 막는다), main 으로 가는 PR 은 릴리즈뿐이다.
+    # main 만 적으면 일반 PR 에서 이 게이트가 한 번도 돌지 않는다.
+    branches: [dev, main]
 
 jobs:
   verify:
