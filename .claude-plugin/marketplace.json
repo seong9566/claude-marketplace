@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "seong-skills",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "개인용 Claude Code 플러그인 마켓플레이스 — Obsidian PM vault 운영, 개발 워크플로, 개발 하네스 스킬.",
   "owner": {
     "name": "HyeonSeong",
@@ -23,7 +23,7 @@
     },
     {
       "name": "sdd-harness",
-      "description": "계획을 subagent에 위임해 실행하는 개발 하네스 스킬 14종. 계획 수립(writing-plans·brainstorming)부터 태스크별 구현·리뷰·유계 fix 루프(subagent-driven-development, 스크립트 없는 -lite 변형 포함), TDD·체계적 디버깅·워크트리 격리·브랜치 마감까지. 업스트림 superpowers v6.2.0(MIT, Jesse Vincent) 파생 — 경로·브랜치 규약은 repo CLAUDE.md에서 지정한다.",
+      "description": "계획을 subagent에 위임해 실행하는 개발 하네스 스킬 15종. 계획 수립(writing-plans·brainstorming)부터 구현자 선택 게이트(choosing-an-implementer), 태스크별 구현·리뷰·유계 fix 루프(subagent-driven-development, 스크립트 없는 -lite 변형 포함), TDD·체계적 디버깅·워크트리 격리·브랜치 마감까지. 업스트림 superpowers v6.2.0(MIT, Jesse Vincent) 파생 — 경로·브랜치 규약은 repo CLAUDE.md에서 지정한다.",
       "source": "./sdd-harness",
       "category": "development"
     },

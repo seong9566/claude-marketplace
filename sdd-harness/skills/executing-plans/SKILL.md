@@ -11,6 +11,8 @@ Load plan, review critically, execute all tasks, report when complete.
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
+**First:** if it is not already settled who writes the code for this plan — an out-of-harness CLI agent, an in-harness subagent, or you — use sdd-harness:choosing-an-implementer before Step 1. Landing here does not mean option ③ was chosen; it is also where you arrive having chosen nothing.
+
 **Note:** Tell your human partner that this workflow works much better with access to subagents (Claude Code, Codex CLI, Codex App, Copilot CLI, and Gemini CLI all qualify). If subagents are available, use sdd-harness:subagent-driven-development instead of this skill.
 
 ## The Process

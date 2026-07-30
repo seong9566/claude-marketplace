@@ -9,6 +9,8 @@ Execute plan by dispatching a fresh implementer subagent per task, a task review
 
 > **This is the script-free variant.** It runs on the **native Agent tool plus inline `git diff`** — no bundled bash scripts (`review-package`, `task-brief`, `sdd-workspace`). Handoffs go through scratch file paths you name yourself, and the progress ledger is replaced by your harness's task list. Pick this variant when bash is unavailable or unwanted, or when you already track progress in the harness; pick `sdd-harness:subagent-driven-development` when you want the scripts to derive workspace paths, briefs, and review packages for you.
 
+**First:** this skill fills the implementer slot with an in-harness subagent. If it is not already settled that that is the right slot for this plan — rather than an out-of-harness CLI agent or you — use sdd-harness:choosing-an-implementer before dispatching anything.
+
 **Why subagents:** You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
 
 **Core principle:** Fresh subagent per task + task review (spec + quality) + broad final review = high quality, fast iteration

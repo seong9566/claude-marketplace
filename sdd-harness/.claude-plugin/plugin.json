@@ -1,6 +1,6 @@
 {
   "name": "sdd-harness",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "계획 실행용 개발 하네스 스킬 묶음 — subagent 기반 계획 실행, TDD, 체계적 디버깅, 코드리뷰 요청/수용, 워크트리 격리. 업스트림 superpowers(MIT) 파생.",
   "author": {
     "name": "HyeonSeong",
