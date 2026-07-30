@@ -16,7 +16,7 @@ bash "<이 스킬 디렉터리>/bootstrap.sh" <vault 루트 경로>
 ```
 
 - **기존 파일은 절대 덮어쓰지 않는다.** 있으면 건너뛰고 보고하므로 여러 번 돌려도 안전하고, **이미 쓰던 vault에 빠진 규약만 채울 때도** 그대로 쓴다.
-- 만드는 것: 폴더 26개 · `AGENTS.md` · `CLAUDE.md` · `wiki/index.md` · `wiki/log.md` · `wiki/meta/` 템플릿 11종.
+- 만드는 것: 폴더 28개 · `AGENTS.md` · `CLAUDE.md` · `wiki/index.md` · `wiki/log.md` · `wiki/meta/` 템플릿 11종.
 
 ## 만든 뒤 반드시 할 것
 

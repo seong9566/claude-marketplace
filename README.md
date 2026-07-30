@@ -21,7 +21,7 @@ Obsidian PM vault 운영 스킬.
 
 | 스킬 | 언제 | 만드는 것 |
 | --- | --- | --- |
-| `vault-bootstrap` | 빈 폴더에서 새 vault를 세울 때, 또는 기존 vault에 운영 규약이 없을 때 | 폴더 26개 + `AGENTS.md`·`CLAUDE.md`·`wiki/index.md`·`log.md` + `wiki/meta/` 템플릿 11종 |
+| `vault-bootstrap` | 빈 폴더에서 새 vault를 세울 때, 또는 기존 vault에 운영 규약이 없을 때 | 폴더 28개 + `AGENTS.md`·`CLAUDE.md`·`wiki/index.md`·`log.md` + `wiki/meta/` 템플릿 11종 |
 | `project-scaffold` | 검증 통과 후보를 프로젝트로 승격할 때 | `wiki/projects/<P>/`의 `index.md` + `prd.md`(공통분모 5섹션) **둘만** |
 | `project-board-scaffold` | PRD가 서고 task 추적이 필요할 때 | `tasks.base` 보드 + `tasks/` 노트, 기존 진행분 소급 기록 |
 
@@ -70,7 +70,7 @@ PRD를 읽고 **feature-first vs layer-first**를 bounded context 결합도로 �
 /plugin install sdd-harness@seong-skills
 ```
 
-`brainstorming` → `writing-plans` → `choosing-an-implementer` → `subagent-driven-development` 한 줄로 이어진다. 실행 직전에 **구현자를 누구로 할지**(외부 CLI 에이전트·하네스 내부 subagent·직접) 권장안과 함께 묻고, 그다음 태스크마다 새 구현자 subagent를 띄우고, 리뷰를 걸고, 실패하면 **유계 fix 루프**(라운드 1–3 재개 → 4–5 상위 모델 → 5라운드 breaker)를 돈다. bash를 못 쓰는 repo는 `subagent-driven-development`의 "Without the Bundled Scripts" 절대로 스크립트를 건너뛴다.
+`brainstorming` → `writing-plans` → `choosing-an-implementer` → `subagent-driven-development` 한 줄로 이어진다. 실행 직전에 **구현자를 누구로 할지**(외부 CLI 에이전트·하네스 내부 subagent·직접) 권장안과 함께 묻고, 그다음 태스크마다 새 구현자 subagent를 띄우고, 리뷰를 걸고, 실패하면 **유계 fix 루프**(라운드 1–3 재개 → 4–5 상위 모델 → 5라운드 breaker)를 돈다. bash를 못 쓰는 repo는 `subagent-driven-development`의 "Without the Bundled Scripts" 절 대로 스크립트를 건너뛴다.
 
 경로·브랜치 규약 같은 프로젝트 고유값은 플러그인에 박지 않았다 — repo의 `CLAUDE.md`에 적으면 스킬이 그걸 따른다(설정 항목 표는 위 README 참조).
 

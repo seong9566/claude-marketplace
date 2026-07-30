@@ -1,7 +1,7 @@
 {
   "name": "dev-harness",
   "version": "0.1.0",
-  "description": "개발 세션 보조 스킬 4종 — AI-Ready 저장소 감사, PR 코드리뷰, 계획 스트레스 테스트(grilling), 세션 토큰 효율 분석.",
+  "description": "개발 세션 보조 스킬 5종 — AI-Ready 저장소 감사, PR 코드리뷰, 계획 스트레스 테스트(grilling), 에이전트 압박 테스트(grill-me), 세션 토큰 효율 분석.",
   "author": {
     "name": "HyeonSeong",
     "email": "dlgustjd9566@gmail.com"
