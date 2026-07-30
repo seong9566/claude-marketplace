@@ -74,7 +74,7 @@ PRD를 읽고 **feature-first vs layer-first**를 bounded context 결합도로 �
 
 경로·브랜치 규약 같은 프로젝트 고유값은 플러그인에 박지 않았다 — repo의 `CLAUDE.md`에 적으면 스킬이 그걸 따른다(설정 항목 표는 위 README 참조).
 
-> `superpowers` 플러그인을 함께 켜 두면 같은 이름의 스킬이 겹친다. 둘 중 하나만 켜는 편이 낫다.
+> ⚠️ **스킬명 14종이 업스트림 `superpowers`와 전부 같다.** 둘 다 켜면 거의 같은 스킬이 쌍으로 제시된다 — 둘 중 하나만 켠다. 상세: [`sdd-harness/README.md` §이름 충돌](sdd-harness/README.md#이름-충돌).
 
 ### `dev-harness`
 
@@ -93,3 +93,5 @@ PRD를 읽고 **feature-first vs layer-first**를 bounded context 결합도로 �
 | `improve-token-efficiency` | 세션 JSONL을 파싱해 토큰·컨텍스트 효율 리포트 생성 |
 
 `ai-readiness-cartography`·`improve-token-efficiency`는 `python3`가 필요하다.
+
+> ⚠️ **다섯 이름 모두 개인 스킬로 흔히 쓰는 이름이다.** `~/.claude/skills/`에 같은 이름이 있어도 서로 덮어쓰지는 않지만(`dev-harness:code-review` vs `code-review`), 어느 쪽을 부르는지 헷갈리기 쉽다. 상세: [`dev-harness/README.md` §이름 충돌](dev-harness/README.md#이름-충돌).

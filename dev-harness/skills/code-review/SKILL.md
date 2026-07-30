@@ -36,5 +36,6 @@ node "$CC" \
 - codex의 구조화 출력(파일·line·confidence·recommendation)을 policy §출력 형식으로 옮긴다.
 
 ## 폴백
-- codex usage/rate limit이면 재시도 없이 `/code-review high --comment`(자체 인라인 게시 — 별도 헤더 코멘트 추가 안 함).
+- codex usage/rate limit이면 재시도 없이 **호스트의 리뷰 명령** `/code-review high --comment` 로 폴백한다(자체 인라인 게시 — 별도 헤더 코멘트 추가 안 함).
+  - ⚠️ 이 스킬의 이름도 `code-review`라 위 명령이 **자기 재호출로 읽히기 쉽다.** 그렇지 않다 — 폴백 대상은 호스트 명령이고, `dev-harness:code-review`(이 스킬)를 다시 부르는 것은 무한 루프다. 호스트에 그 명령이 없으면 폴백하지 말고 사용자에게 보고한다.
 - **원인 불명 실패는 폴백하지 않고 보고**한다.

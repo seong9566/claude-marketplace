@@ -6,6 +6,16 @@
 
 업스트림 [superpowers](https://github.com/obra/superpowers) v6.2.0(MIT, Jesse Vincent) 파생. 라이선스 전문은 LICENSE 참조.
 
+## 이름 충돌
+
+**수록 스킬 14종의 이름이 업스트림 `superpowers`와 전부 같다.** 파생이므로 당연한 결과지만, 결과는 그냥 넘길 일이 아니다.
+
+둘 다 켜 두면 `sdd-harness:brainstorming` 과 `superpowers:brainstorming` 처럼 **거의 같은 스킬이 14쌍** 모델에게 동시에 제시된다. 접두가 다르니 덮어쓰지는 않지만, 고른 쪽이 내가 고친 쪽이라는 보장이 없다 — 한쪽만 고쳐 두고 다른 쪽이 도는 것이 이 구조에서 가장 흔한 실패다.
+
+**둘 중 하나만 켠다.** 이 플러그인을 쓰기로 했다면 `superpowers`는 끄고 들어온다 — `/plugin` 메뉴에서 끄거나, `~/.claude/settings.json` 의 `enabledPlugins` 에 `"superpowers@claude-plugins-official": false` 를 둔다.
+
+> 프로젝트 `.claude/settings.local.json` 이 전역 설정을 덮으므로, 전역에서 껐는데도 겹쳐 보이면 그 파일부터 확인한다.
+
 ## 수록 스킬
 
 | 스킬명 | description 첫 문장 |
