@@ -58,6 +58,14 @@ def notify_discord(text):
 def die(msg):
     sys.stderr.write("task: " + msg + "\n"); sys.exit(1)
 
+def safe_name(label, s):
+    """경로 성분으로 쓰이는 인자. 구분자와 상대경로 성분만 막는다(한글·공백은 허용)."""
+    if s is None:
+        return None
+    if not s or "/" in s or "\\" in s or s in (".", ".."):
+        die(label + "에 / 나 .. 는 쓸 수 없다: " + repr(s))
+    return s
+
 def usage():
     sys.stderr.write(
         "사용법:\n"
@@ -70,6 +78,7 @@ def usage():
         "예: task.sh wip T03 --project toss-자동매매 --section code\n"
         "규칙: 상태·섹션 변화 없으면 no-op(로그 없음). done→wip|todo 강등은 --force 필요(훅 오전환 방지).\n"
         "      ID는 프로젝트 안에서만 유일 — 여러 프로젝트에 같은 ID가 있으면 --project 필수.\n"
+        "      task ID와 --project에는 /·\\·.·.. 를 쓸 수 없다.\n"
     ); sys.exit(1)
 
 def parse_flags(argv):
@@ -255,14 +264,14 @@ def main():
     pos, flags = parse_flags(argv[1:])
     if cmd in STATUSES:
         if not pos: usage()
-        cmd_transition(cmd, pos[0], flags.get("section"), "force" in flags, flags.get("project"))
+        cmd_transition(cmd, safe_name("task ID", pos[0]), flags.get("section"), "force" in flags, safe_name("--project", flags.get("project")))
     elif cmd == "new":
         if len(pos) < 2: usage()
-        cmd_new(pos[0], pos[1], flags.get("project"), flags.get("section"))
+        cmd_new(safe_name("task ID", pos[0]), pos[1], safe_name("--project", flags.get("project")), flags.get("section"))
     elif cmd == "ls":
-        cmd_ls(flags.get("project"), flags.get("status"))
+        cmd_ls(safe_name("--project", flags.get("project")), flags.get("status"))
     elif cmd == "board":
-        cmd_board(pos[0] if pos else flags.get("project"))
+        cmd_board(safe_name("--project", pos[0] if pos else flags.get("project")))
     else:
         usage()
 

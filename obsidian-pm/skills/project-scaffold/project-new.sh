@@ -9,7 +9,7 @@ usage() {
   TASK_VAULT=<vault 루트> project-new.sh <slug> --title "<제목>" --summary "<한 줄 정의>" \
       [--status "<현재 상태>"] [--repo <코드 repo 이름>]
 
-  <slug>      wiki/projects/ 아래 폴더명 (한글 가능, 공백 대신 -)
+  <slug>      wiki/projects/ 아래 폴더명 (한글 가능, 공백 대신 -; /·\·.·.. 사용 불가)
   --title     문서 제목에 쓸 이름
   --summary   이 제품이 무엇인지 한 줄 (index 인용문에 들어간다)
   --status    예: "발굴 통과 — PRD 작성 전" (생략 시 이 문구)
@@ -21,6 +21,12 @@ USAGE
 [ $# -ge 1 ] || usage
 SLUG="$1"; shift
 case "$SLUG" in --*) usage;; esac
+case "$SLUG" in
+  ""|.|..|*/*|*\\*)
+    echo "project-new: slug에 / 나 .. 는 쓸 수 없다 — wiki/projects/ 바로 아래 폴더명 하나여야 한다." >&2
+    exit 1
+    ;;
+esac
 
 TITLE=""; SUMMARY=""; STATUS="발굴 통과 — PRD 작성 전"; REPO=""
 while [ $# -gt 0 ]; do

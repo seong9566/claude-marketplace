@@ -20,7 +20,7 @@ description: Use when a validated idea should become a project folder in an Obsi
 
 | 물을 것 | 쓰이는 곳 |
 | --- | --- |
-| 폴더명(slug) | `wiki/projects/<slug>/` — 한글 가능, 공백 대신 `-` |
+| 폴더명(slug) | `wiki/projects/<slug>/` — 한글 가능, 공백 대신 `-`; `/`·`\`·`.`·`..` 사용 불가 |
 | 제목 | 문서 제목 |
 | **한 줄 정의** | index 인용문. "무엇을 하는 물건인가"를 한 문장으로 |
 | 현재 상태 · 코드 repo | index 상태 줄 (repo는 없으면 생략) |

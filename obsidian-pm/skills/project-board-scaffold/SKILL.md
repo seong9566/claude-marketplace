@@ -9,6 +9,8 @@ Obsidian PM vault의 `wiki/projects/<P>/`에 **보드(`tasks.base`) + task 노�
 
 전제 레이아웃: vault 루트에 `wiki/projects/<프로젝트>/`가 있고, task 한 개 = 노트 한 개(프론트매터 `status`가 진실), 보드는 네이티브 Obsidian **Bases**(`.base`)가 `status`로 그룹핑한다. 커뮤니티 플러그인 불필요.
 
+task ID와 `--project`에는 `/`·`\`·`.`·`..`를 쓸 수 없다.
+
 ## 도구 — 동봉한 `task.sh`
 
 이 스킬 디렉터리의 `task.sh`가 보드 생성·노트 생성·상태 전환을 담당한다. **vault 경로는 `TASK_VAULT`로 준다.**
