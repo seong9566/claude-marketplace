@@ -6,7 +6,7 @@
 # Each session gets its own directory to avoid conflicts.
 #
 # Options:
-#   --project-dir <path>  Store session files under <path>/.superpowers/brainstorm/
+#   --project-dir <path>  Store session files under <path>/.sdd-harness/brainstorm/
 #                         instead of /tmp. Files persist after server stops.
 #   --host <bind-host>    Host/interface to bind (default: 127.0.0.1).
 #                         Use 0.0.0.0 in remote/containerized environments.
@@ -114,11 +114,11 @@ umask 077
 SESSION_ID="$$-$(date +%s)"
 
 if [[ -n "$PROJECT_DIR" ]]; then
-  SESSION_DIR="${PROJECT_DIR}/.superpowers/brainstorm/${SESSION_ID}"
+  SESSION_DIR="${PROJECT_DIR}/.sdd-harness/brainstorm/${SESSION_ID}"
   # Persist the bound port and key per project so a restart reuses them and an
   # already-open browser tab reconnects to the same URL with a valid cookie.
-  export BRAINSTORM_PORT_FILE="${PROJECT_DIR}/.superpowers/brainstorm/.last-port"
-  export BRAINSTORM_TOKEN_FILE="${PROJECT_DIR}/.superpowers/brainstorm/.last-token"
+  export BRAINSTORM_PORT_FILE="${PROJECT_DIR}/.sdd-harness/brainstorm/.last-port"
+  export BRAINSTORM_TOKEN_FILE="${PROJECT_DIR}/.sdd-harness/brainstorm/.last-token"
 else
   SESSION_DIR="/tmp/brainstorm-${SESSION_ID}"
 fi
@@ -130,6 +130,13 @@ SERVER_ID_FILE="${STATE_DIR}/server-instance-id"
 
 # Create fresh session directory with content and state peers
 mkdir -p "${SESSION_DIR}/content" "$STATE_DIR"
+
+# Keep project-dir sessions out of `git status` and out of accidental commits
+# without touching any tracked file. A self-ignoring .gitignore at the harness
+# root covers the SDD workspace too, so one file serves both skills.
+if [[ -n "$PROJECT_DIR" && ! -e "${PROJECT_DIR}/.sdd-harness/.gitignore" ]]; then
+  printf '*\n' > "${PROJECT_DIR}/.sdd-harness/.gitignore" 2>/dev/null || true
+fi
 
 SERVER_ID=""
 if [[ -r /dev/urandom ]]; then

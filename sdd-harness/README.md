@@ -37,6 +37,7 @@
 
 **문서 경로 중립화**
 
+- **런타임 디렉터리** `.superpowers/sdd/`·`.superpowers/brainstorm/` → **`.sdd-harness/sdd/`·`.sdd-harness/brainstorm/`** (스크립트 4종 + 문서). 스킬이 남의 repo 작업 트리에 만드는 디렉터리라 업스트림 브랜드를 그대로 쓸 이유가 없다. self-ignoring `.gitignore`도 두 스킬이 공유하도록 `.sdd-harness/` 루트 한 곳으로 모았다(전에는 SDD만 `sdd/` 아래에 만들었고 brainstorm은 repo의 `.gitignore` 항목에 의존했다 — 그 항목이 없는 repo에선 세션 파일이 노출됐다).
 - `docs/superpowers/plans/` → **`docs/plans/`**, `docs/superpowers/specs/` → **`docs/specs/`** (8곳). 업스트림 경로는 플러그인 이름으로 브랜딩돼 있어 다른 repo에 그대로 쓸 수 없었다. 두 경로 모두 **기본값일 뿐이고 repo CLAUDE.md가 지정하면 그쪽이 이긴다**는 문장을 함께 넣었다.
 
 **보탠 것**
@@ -64,4 +65,4 @@
 | 모델 티어 | `haiku`/`sonnet`/`opus` 일반명 | 특정 모델 ID로 고정하지 않았다 — 세대가 바뀌면 stale해지기 때문 |
 | 구현자(누가 코드를 쓰는가) | 매번 묻는다 | `choosing-an-implementer`가 묻는다. 항상 같은 쪽을 쓰는 repo면 CLAUDE.md에 적어 두면 그 스킬이 묻지 않고 넘어간다. 외부 CLI 에이전트를 쓴다면 어떤 CLI인지·호출 경로도 함께 적는다(플러그인은 특정 CLI를 전제하지 않는다) |
 
-`subagent-driven-development`(full)를 쓸 때 원장·산출물은 `.superpowers/sdd/<plan-basename>/` 아래 git-ignored 경로에 생긴다. 스크립트가 `.gitignore`를 자동 생성하므로 repo에서 따로 할 일은 없다.
+`subagent-driven-development`의 원장·산출물은 `.sdd-harness/sdd/<plan-basename>/`, `brainstorming`의 세션 파일은 `.sdd-harness/brainstorm/<session-id>/` 아래 생긴다. `.sdd-harness/`에 self-ignoring `.gitignore`가 자동 생성되므로 repo `.gitignore`에 따로 넣을 일은 없다.

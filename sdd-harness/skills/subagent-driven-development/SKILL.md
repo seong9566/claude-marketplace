@@ -127,7 +127,7 @@ identical, only the plumbing changes.
 
 - Each plan owns a workspace: at skill start, run this skill's
   `scripts/sdd-workspace PLAN_FILE` — it prints the plan's git-ignored
-  directory (`<repo-root>/.superpowers/sdd/<plan-basename>/`), home to
+  directory (`<repo-root>/.sdd-harness/sdd/<plan-basename>/`), home to
   every artifact for THIS plan: ledger, briefs, reports, review packages.
   Another plan's directory is never yours to read or write.
 - Check for this plan's ledger at `<workspace>/progress.md`. If its first
@@ -135,7 +135,7 @@ identical, only the plumbing changes.
   — do not re-dispatch them; resume at the first task without one. A task
   whose last line is a fix round is mid-loop: resume the loop at the next
   round. A ledger whose first line names a different plan file — or a stray
-  ledger at the old flat path `.superpowers/sdd/progress.md` — is another
+  ledger at the old flat path `.sdd-harness/sdd/progress.md` — is another
   plan's progress: leave it in place and start your own, fresh.
 - Create the ledger with its identity as the first line:
   `# SDD ledger — plan: <plan file path>`.
@@ -163,7 +163,7 @@ conflicts that only emerge from implementation.
 ## Without the Bundled Scripts
 
 The three scripts are plumbing, not the method. Skip them when bash is
-unavailable, when the repo should not gain a `.superpowers/` directory in its
+unavailable, when the repo should not gain a `.sdd-harness/` directory in its
 working tree, or when you already track task progress in the harness. Every
 other part of this skill — fresh implementer per task, task review, the bounded
 fix loop, the final broad review — is unchanged. Substitute:
