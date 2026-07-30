@@ -18,7 +18,6 @@
 | `receiving-code-review` | Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind implementation |
 | `requesting-code-review` | Use when completing tasks, implementing major features, or before merging to verify work meets requirements |
 | `subagent-driven-development` | Use when executing implementation plans with independent tasks in the current session |
-| `subagent-driven-development-lite` | 위와 같지만 **번들 bash 스크립트 없이** 동작하는 변형 — 네이티브 Agent 툴 + 인라인 `git diff`, 진행 원장은 하네스 Task 목록. bash를 못 쓰거나 이미 하네스에서 진행을 추적하는 repo용 |
 | `systematic-debugging` | Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes |
 | `test-driven-development` | Use when implementing any feature or bugfix, before writing implementation code |
 | `using-git-worktrees` | Use when starting feature work that needs isolation from current workspace or before executing implementation plans - ensures an isolated workspace exists via native tools or git worktree fallback |
@@ -45,12 +44,12 @@
 - `writing-plans` — **Red Verification** 절 신설. Step 2에서 테스트가 예상한 이유로 실패하지 않으면 의심할 대상은 구현이 아니라 테스트라는 규율, 그리고 그래서 계획의 Red 기대값에 실패 **메시지**까지 적어야 한다는 근거. 무효 테스트는 구현 전후로 모두 green이라 아무도 잡아주지 않는다.
 - `writing-plans`·`brainstorming` — 모델 티어 지침(싼 티어면 올리고 끝나면 내린다).
 - `brainstorming` — 결정·승인·선택은 산문에 묻지 말고 런타임의 구조화 질문 도구(Claude Code는 `AskUserQuestion`)로 물으라는 지침.
-- `subagent-driven-development-lite` — 스크립트 없는 변형 신설(아래 참조).
-- `choosing-an-implementer` — **구현자 선택 게이트 신설.** 업스트림은 계획을 실행할 때 구현자가 하네스 내부 subagent라고 암묵적으로 전제한다. 그러나 실제 선택지는 셋(외부 CLI 에이전트·내부 subagent·컨트롤러 직접)이고 각각 비용 주체가 달라 **사용자가 정할 문제**다. 다만 계획을 읽은 쪽은 나이므로 선택지만 늘어놓지 말고 태스크 성질로 **권장안과 근거를 붙이도록** 규정했다. 판정 기준표는 이 스킬 한 곳에만 두고, 실행 진입점 3곳(`subagent-driven-development`·`-lite`·`executing-plans`)에는 부르라는 한 줄만 넣었다 — 표를 3부로 복제하면 조용히 어긋난다. `executing-plans`에도 넣은 이유는 그 경로가 "subagent 없이 돌릴 때의 폴백"이라 **아무것도 고르지 않은 채 도착하는 자리**이기도 하기 때문이다.
+- `subagent-driven-development` — **Without the Bundled Scripts** 절 신설. 번들 bash 스크립트 3종(`sdd-workspace`·`task-brief`·`review-package`)을 못 쓰거나 쓰기 싫은 환경을 위한 인라인 대체표와, 그때 잃는 것 두 가지(컨텍스트 절약·플랜별 격리)를 명시했다. 진행 원장은 파일 대신 하네스 Task 목록을 쓴다.
+- `choosing-an-implementer` — **구현자 선택 게이트 신설.** 업스트림은 계획을 실행할 때 구현자가 하네스 내부 subagent라고 암묵적으로 전제한다. 그러나 실제 선택지는 셋(외부 CLI 에이전트·내부 subagent·컨트롤러 직접)이고 각각 비용 주체가 달라 **사용자가 정할 문제**다. 다만 계획을 읽은 쪽은 나이므로 선택지만 늘어놓지 말고 태스크 성질로 **권장안과 근거를 붙이도록** 규정했다. 판정 기준표는 이 스킬 한 곳에만 두고, 실행 진입점 2곳(`subagent-driven-development`·`executing-plans`)에는 부르라는 한 줄만 넣었다 — 표를 복제하면 조용히 어긋난다. `executing-plans`에도 넣은 이유는 그 경로가 "subagent 없이 돌릴 때의 폴백"이라 **아무것도 고르지 않은 채 도착하는 자리**이기도 하기 때문이다.
 
-**두 변형을 함께 담은 이유**
+**스크립트 없는 변형을 별도 스킬로 두지 않은 이유**
 
-`subagent-driven-development`는 번들 bash 스크립트로 워크스페이스·브리프·리뷰 패키지 경로를 파생시키고 파일 원장(`.superpowers/sdd/<plan>/progress.md`)에 진행을 남긴다. `-lite`는 그 스크립트를 걷어내고 네이티브 Agent 툴 + 인라인 `git diff`로 같은 계약을 채우며, 진행은 하네스 Task 목록에 남긴다. **어느 쪽이 낫다는 뜻이 아니라 실행 환경이 다르다** — bash를 쓸 수 있고 원장을 파일로 남기고 싶으면 앞쪽, 그렇지 않거나 이미 하네스에서 태스크를 추적하면 뒤쪽.
+한때 `subagent-driven-development-lite`라는 두 번째 스킬로 담았다가 **되돌려 full 안의 한 절로 흡수했다.** 계기는 "이건 왜 있냐"는 물음이었고, 답이 "발견된 필요가 아니라 보존된 fork라서"였다. 실측: 281줄과 505줄이 같은 계약(태스크마다 새 구현자 → 태스크 리뷰 → 유계 fix 루프 → 최종 전체 리뷰)을 담고 있었고, 삭제 전 대조에서 lite에 **고유 내용은 0건**이었다. 차이는 전부 배관(스크립트 3종·원장 위치)이라 표 하나로 들어간다. 사본을 하나 줄이려고 시작한 이관에서 사본을 하나 늘리고 있었던 셈이다.
 
 ## repo마다 설정할 것
 

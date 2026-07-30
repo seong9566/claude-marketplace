@@ -39,8 +39,8 @@ a detailed completeness contract into the prompt does not prevent this — split
 
 ### ② In-harness subagent
 
-`sdd-harness:subagent-driven-development` (or `-lite` where the bundled scripts can't
-run) dispatches a fresh subagent per task inside this harness.
+`sdd-harness:subagent-driven-development` dispatches a fresh subagent per task inside
+this harness.
 
 Costs harness tokens but saves your main context. The advantage is that CLAUDE.md,
 project rules, and hooks load automatically and fire as usual — nothing has to be
@@ -79,7 +79,7 @@ implication in each option's description — that is what the decision turns on.
 | Choice | Then |
 | --- | --- |
 | ① | Dispatch one task per job to the CLI agent, with the rule excerpts that task needs |
-| ② | `sdd-harness:subagent-driven-development`, or `sdd-harness:subagent-driven-development-lite` if the bundled scripts can't run |
+| ② | `sdd-harness:subagent-driven-development` — see its "Without the Bundled Scripts" section if bash is unavailable |
 | ③ | `sdd-harness:executing-plans` |
 
 **No nesting.** Do not route work through an in-harness implementer subagent that then

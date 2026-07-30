@@ -121,6 +121,10 @@ controllers that lost their place have re-dispatched entire completed task
 sequences — the single most expensive failure observed. Track progress in
 a ledger file, not only in todos.
 
+**If the bundled scripts are unavailable or unwanted, read
+"Without the Bundled Scripts" below before this list** — the workflow is
+identical, only the plumbing changes.
+
 - Each plan owns a workspace: at skill start, run this skill's
   `scripts/sdd-workspace PLAN_FILE` — it prints the plan's git-ignored
   directory (`<repo-root>/.superpowers/sdd/<plan-basename>/`), home to
@@ -155,6 +159,35 @@ each finding beside the plan text that mandates it, asking which governs —
 before execution begins, not one interrupt per discovery mid-plan. If the
 scan is clean, proceed without comment. The review loop remains the net for
 conflicts that only emerge from implementation.
+
+## Without the Bundled Scripts
+
+The three scripts are plumbing, not the method. Skip them when bash is
+unavailable, when the repo should not gain a `.superpowers/` directory in its
+working tree, or when you already track task progress in the harness. Every
+other part of this skill — fresh implementer per task, task review, the bounded
+fix loop, the final broad review — is unchanged. Substitute:
+
+| Script | Inline substitute |
+| --- | --- |
+| `scripts/sdd-workspace PLAN_FILE` | Name a scratch directory yourself and use it consistently for this plan's briefs, reports, and review packages. Keep it out of version control. |
+| `scripts/task-brief PLAN_FILE N` | Read the plan, copy the task's section into a uniquely named scratch file (e.g. `.claude/tmp/task-N-brief.md`), and pass the implementer that path. |
+| `scripts/review-package PLAN_FILE BASE HEAD` | Run `git log --oneline BASE..HEAD`, `git diff --stat BASE HEAD`, and `git diff -U10 BASE HEAD` into a scratch file; pass the reviewer that path. The recorded per-task BASE still matters — do not substitute `HEAD~1`, which truncates multi-commit tasks. |
+| `<workspace>/progress.md` ledger | The harness task list (in Claude Code: TaskCreate/TaskUpdate). It survives compaction and your human partner can see it, which a scratch file cannot. |
+
+Two costs to know you are paying:
+
+- `task-brief` and `review-package` exist to keep large text **out of your own
+  context** — the subagent reads a path, not a paste. Doing it inline means
+  briefs and diffs pass through you. On a large diff, that is the expensive
+  part of this workflow, so still write to a file and pass the path rather
+  than pasting the content into the prompt.
+- Without the plan-scoped workspace, nothing structurally prevents one plan's
+  artifacts from colliding with another's. Put the plan name in your scratch
+  paths.
+
+Everything below applies either way. Where the text names a script, use its
+substitute above.
 
 ## Model Selection
 
