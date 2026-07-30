@@ -50,7 +50,7 @@ description: Audits any repository against the v2 AI-Ready rubric (100 pts · 7 
 
 ```bash
 # 한 줄로 충분 (벤더 자동 제외, rsync 불필요)
-python3 ~/.claude/skills/ai-readiness-cartography/scripts/score.py <repo-path> \
+python3 "$CLAUDE_PLUGIN_ROOT/skills/ai-readiness-cartography/scripts/score.py" <repo-path> \
   --json <output-path>/ai-readiness-score.json \
   --html <output-path>/ai-readiness-map.html   # --html 생략 시 markdown 요약만
 ```

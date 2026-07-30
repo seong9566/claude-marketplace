@@ -22,7 +22,7 @@ Claude Code 가 `~/.claude/projects/<encoded-repo-path>/*.jsonl` 에 남기는 �
 ### 2. 세션 분석 실행
 
 ```bash
-python3 ~/.claude/skills/improve-token-efficiency/scripts/analyze_sessions.py \
+python3 "$CLAUDE_PLUGIN_ROOT/skills/improve-token-efficiency/scripts/analyze_sessions.py" \
     --repo "$(pwd)" \
     --out /tmp/session_analysis.json
 ```
@@ -60,7 +60,7 @@ python3 ~/.claude/skills/improve-token-efficiency/scripts/analyze_sessions.py \
 ### 4. 대시보드 생성
 
 ```bash
-python3 ~/.claude/skills/improve-token-efficiency/scripts/build_dashboard.py \
+python3 "$CLAUDE_PLUGIN_ROOT/skills/improve-token-efficiency/scripts/build_dashboard.py" \
     --input /tmp/session_analysis.json \
     --out /tmp/efficiency_report.html
 open /tmp/efficiency_report.html

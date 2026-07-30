@@ -5,6 +5,10 @@ description: Use when a pull request needs a code review — especially right af
 
 # Code Review — Codex adversarial 엔진 (과금 0)
 
+전제조건: Codex CLI가 설치되어 있어야 한다.
+전제조건: `openai-codex` 플러그인이 설치되어 있어야 한다.
+전제조건: `gh` 인증이 완료되어 있어야 한다.
+
 내가 만든 PR을 **로컬 Codex CLI(ChatGPT 구독 인증)**로 리뷰하고, 결과를 심각도·2계층 "PR 리뷰 글"로 게시한다. OpenAI API 과금 0. **리뷰 전용 — 코드 수정 금지.**
 
 > **먼저 [`policy.md`](policy.md)를 읽는다.** 게이트·적대 스탠스·focus 라우팅·확신도·출력 형식·수렴 판단·게시 절차는 **전부 거기가 정본**이고 Codex CLI판과 공유한다. 이 파일은 **Claude Code에서의 실행 방법**만 담는다. 정책을 바꿔야 하면 이 파일이 아니라 `policy.md`를 고친다.
@@ -19,7 +23,12 @@ description: Use when a pull request needs a code review — especially right af
 cd <리뷰 대상 워크트리 절대경로>
 base=$(gh pr view <PR#> --json baseRefName -q .baseRefName)
 # adversarial-review는 --base 와 focus 텍스트를 함께 받는다(review와 달리 배타 아님)
-node "$HOME/.claude/plugins/marketplaces/openai-codex/plugins/codex/scripts/codex-companion.mjs" \
+CC=$(ls "$HOME"/.claude/plugins/marketplaces/*/plugins/codex/scripts/codex-companion.mjs 2>/dev/null | head -1)
+if [ -z "$CC" ]; then
+  echo "codex 플러그인이 없다 — 이 스킬을 쓸 수 없으니 사용자에게 알리고 중단한다"
+  exit 1
+fi
+node "$CC" \
   adversarial-review --base "origin/$base" --wait "<policy §적대 스탠스의 focus 텍스트>" > /tmp/cr-raw.md
 ```
 - **`origin/`을 붙이는 이유**: `baseRefName`은 `dev`처럼 브랜치명만 준다. 그대로 넘기면 codex가 **로컬 `dev`**를 본다 — 메인 트리는 브랜치 전환·머지가 훅으로 막혀 있어 로컬 base 브랜치가 며칠씩 뒤처지고, 그러면 **이미 머지된 남의 PR이 diff에 섞여** 오탐이 난다(2026-07-27 PR #96 실측: 로컬 `dev`가 6일 전 커밋이라 PR #92·#93 머지분까지 리뷰 대상에 들어갔다).
