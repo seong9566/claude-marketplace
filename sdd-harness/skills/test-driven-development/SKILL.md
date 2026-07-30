@@ -46,27 +46,8 @@ Implement fresh from tests. Period.
 
 ## Red-Green-Refactor
 
-```dot
-digraph tdd_cycle {
-    rankdir=LR;
-    red [label="RED\nWrite failing test", shape=box, style=filled, fillcolor="#ffcccc"];
-    verify_red [label="Verify fails\ncorrectly", shape=diamond];
-    green [label="GREEN\nMinimal code", shape=box, style=filled, fillcolor="#ccffcc"];
-    verify_green [label="Verify passes\nAll green", shape=diamond];
-    refactor [label="REFACTOR\nClean up", shape=box, style=filled, fillcolor="#ccccff"];
-    next [label="Next", shape=ellipse];
-
-    red -> verify_red;
-    verify_red -> green [label="yes"];
-    verify_red -> red [label="wrong\nfailure"];
-    green -> verify_green;
-    verify_green -> refactor [label="yes"];
-    verify_green -> green [label="no"];
-    refactor -> verify_green [label="stay\ngreen"];
-    verify_green -> next;
-    next -> red;
-}
-```
+RED → Verify RED → GREEN → Verify GREEN → REFACTOR → Repeat. Each verify step can send you back:
+a test that fails for the wrong reason returns to RED, and a test that does not pass returns to GREEN.
 
 ### RED - Write Failing Test
 
@@ -227,19 +208,12 @@ When writing or changing any test, read [writing-good-tests.md](writing-good-tes
 
 ## Red Flags - STOP and Start Over
 
+Signals, not excuses — the excuses are answered in the table above.
+
 - Code before test
-- Test after implementation
-- Test passes immediately
-- Can't explain why test failed
-- Tests added "later"
-- Rationalizing "just this once"
-- "I already manually tested it"
-- "Tests after achieve the same purpose"
-- "It's about spirit not ritual"
-- "Keep as reference" or "adapt existing code"
-- "Already spent X hours, deleting is wasteful"
-- "TDD is dogmatic, I'm being pragmatic"
-- "This is different because..."
+- Test passes immediately (you never watched it fail, so you never proved it can catch the bug)
+- Can't explain why the test failed
+- Reaching for "just this once" or "this is different because…"
 
 **All of these mean: Delete code. Start over with TDD.**
 

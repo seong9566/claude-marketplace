@@ -144,12 +144,7 @@ A browser-based companion for showing mockups, diagrams, and visual options duri
 
 **This offer MUST be its own message.** Only the offer — no clarifying question, summary, or other content. Wait for the user's response. If they accept, start the server with `--open` so their browser opens to the first screen automatically. If they decline, continue text-only and don't offer again unless they raise it.
 
-**Per-question decision:** Even after the user accepts, decide FOR EACH QUESTION whether to use the browser or the terminal. The test: **would the user understand this better by seeing it than reading it?**
-
-- **Use the browser** for content that IS visual — mockups, wireframes, layout comparisons, architecture diagrams, side-by-side visual designs
-- **Use the terminal** for content that is text — requirements questions, conceptual choices, tradeoff lists, A/B/C/D text options, scope decisions
-
-A question about a UI topic is not automatically a visual question. "What does personality mean in this context?" is a conceptual question — use the terminal. "Which wizard layout works better?" is a visual question — use the browser.
+**Per-question decision:** Even after the user accepts, decide FOR EACH QUESTION whether to use the browser or the terminal. The test: **would the user understand this better by seeing it than reading it?** The full rule — which content types go which way, and why a UI *topic* is not automatically a visual *question* — is in the companion guide's `## When to Use`; do not restate it here, or the two copies will disagree.
 
 If they agree to the companion, read the detailed guide before proceeding:
 `"$CLAUDE_PLUGIN_ROOT/skills/brainstorming/visual-companion.md"`

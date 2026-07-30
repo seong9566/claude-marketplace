@@ -40,10 +40,10 @@ Dispatch a `general-purpose` subagent, filling the template at [code-reviewer.md
 - `{HEAD_SHA}` - Ending commit
 
 **3. Act on feedback:**
-- Fix Critical issues immediately
-- Fix Important issues before proceeding
-- Note Minor issues for later
-- Push back if reviewer is wrong (with reasoning)
+
+**REQUIRED SUB-SKILL:** Use sdd-harness:receiving-code-review. Which severities block, when to
+push back, and how to verify a suggestion before implementing it are that skill's whole subject.
+Summarizing it here is exactly how a model finishes the review loop having never loaded it.
 
 ## Example
 
@@ -86,10 +86,5 @@ You: [Fix progress indicators]
 - Ignore Critical issues
 - Proceed with unfixed Important issues
 - Argue with valid technical feedback
-
-**If reviewer wrong:**
-- Push back with technical reasoning
-- Show code/tests that prove it works
-- Request clarification
 
 See template at: [code-reviewer.md](code-reviewer.md)
