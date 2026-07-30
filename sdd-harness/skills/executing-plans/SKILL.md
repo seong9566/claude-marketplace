@@ -1,6 +1,6 @@
 ---
 name: executing-plans
-description: Use when you have a written implementation plan to execute in a separate session with review checkpoints
+description: Use when you are implementing a written plan yourself, task by task with review checkpoints, rather than dispatching a fresh subagent per task
 ---
 
 # Executing Plans
@@ -13,7 +13,7 @@ Load plan, review critically, execute all tasks, report when complete.
 
 **First:** if it is not already settled who writes the code for this plan — an out-of-harness CLI agent, an in-harness subagent, or you — use sdd-harness:choosing-an-implementer before Step 1. Landing here does not mean option ③ was chosen; it is also where you arrive having chosen nothing.
 
-**Note:** Tell your human partner that this workflow works much better with access to subagents (Claude Code, Codex CLI, Codex App, Copilot CLI, and Gemini CLI all qualify). If subagents are available, use sdd-harness:subagent-driven-development instead of this skill.
+**Note:** Where subagents are available (Claude Code, Codex CLI, Codex App, Copilot CLI, and Gemini CLI all qualify), sdd-harness:subagent-driven-development is usually the stronger workflow — say so **while the implementer slot is still open**. Once choosing-an-implementer has settled on ③, that answer stands and you execute here. Re-routing to subagents at this point spends a decision your human partner already made.
 
 ## The Process
 

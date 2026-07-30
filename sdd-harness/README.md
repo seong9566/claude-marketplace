@@ -13,11 +13,11 @@
 | `brainstorming` | You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. |
 | `choosing-an-implementer` | 계획 실행 직전에 **구현자를 누구로 할지**(외부 CLI 에이전트 / 하네스 내부 subagent / 나) 정하고, 태스크 성질로 권장안을 붙여 사용자에게 묻는다 |
 | `dispatching-parallel-agents` | Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies |
-| `executing-plans` | Use when you have a written implementation plan to execute in a separate session with review checkpoints |
+| `executing-plans` | Use when you are implementing a written plan yourself, task by task with review checkpoints, rather than dispatching a fresh subagent per task |
 | `finishing-a-development-branch` | Use when implementation is complete, all tests pass, and you need to decide how to integrate the work |
 | `receiving-code-review` | Use when receiving code review feedback, before implementing suggestions, especially if feedback seems unclear or technically questionable - requires technical rigor and verification, not performative agreement or blind implementation |
 | `requesting-code-review` | Use when completing tasks, implementing major features, or before merging to verify work meets requirements |
-| `subagent-driven-development` | Use when executing implementation plans with independent tasks in the current session |
+| `subagent-driven-development` | Use when executing an implementation plan whose tasks are mostly independent, by dispatching a fresh implementer subagent per task with a review after each |
 | `systematic-debugging` | Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes |
 | `test-driven-development` | Use when implementing any feature or bugfix, before writing implementation code |
 | `using-git-worktrees` | Use when starting feature work that needs isolation from current workspace or before executing implementation plans - ensures an isolated workspace exists via native tools or git worktree fallback |
@@ -46,7 +46,9 @@
 - `writing-plans`·`brainstorming` — 모델 티어 지침(싼 티어면 올리고 끝나면 내린다).
 - `brainstorming` — 결정·승인·선택은 산문에 묻지 말고 런타임의 구조화 질문 도구(Claude Code는 `AskUserQuestion`)로 물으라는 지침.
 - `subagent-driven-development` — **Without the Bundled Scripts** 절 신설. 번들 bash 스크립트 3종(`sdd-workspace`·`task-brief`·`review-package`)을 못 쓰거나 쓰기 싫은 환경을 위한 인라인 대체표와, 그때 잃는 것 두 가지(컨텍스트 절약·플랜별 격리)를 명시했다. 진행 원장은 파일 대신 하네스 Task 목록을 쓴다.
-- `choosing-an-implementer` — **구현자 선택 게이트 신설.** 업스트림은 계획을 실행할 때 구현자가 하네스 내부 subagent라고 암묵적으로 전제한다. 그러나 실제 선택지는 셋(외부 CLI 에이전트·내부 subagent·컨트롤러 직접)이고 각각 비용 주체가 달라 **사용자가 정할 문제**다. 다만 계획을 읽은 쪽은 나이므로 선택지만 늘어놓지 말고 태스크 성질로 **권장안과 근거를 붙이도록** 규정했다. 판정 기준표는 이 스킬 한 곳에만 두고, 실행 진입점 2곳(`subagent-driven-development`·`executing-plans`)에는 부르라는 한 줄만 넣었다 — 표를 복제하면 조용히 어긋난다. `executing-plans`에도 넣은 이유는 그 경로가 "subagent 없이 돌릴 때의 폴백"이라 **아무것도 고르지 않은 채 도착하는 자리**이기도 하기 때문이다.
+- `choosing-an-implementer` — **구현자 선택 게이트 신설.** 업스트림은 계획을 실행할 때 구현자가 하네스 내부 subagent라고 암묵적으로 전제한다. 그러나 실제 선택지는 셋(외부 CLI 에이전트·내부 subagent·컨트롤러 직접)이고 각각 비용 주체가 달라 **사용자가 정할 문제**다. 다만 계획을 읽은 쪽은 나이므로 선택지만 늘어놓지 말고 태스크 성질로 **권장안과 근거를 붙이도록** 규정했다. 판정 기준표는 이 스킬 한 곳에만 두고, 실행 진입점 3곳(`writing-plans`·`subagent-driven-development`·`executing-plans`)에는 부르라는 한 줄만 넣었다 — 표를 복제하면 조용히 어긋난다. `executing-plans`에도 넣은 이유는 그 경로가 "subagent 없이 돌릴 때의 폴백"이라 **아무것도 고르지 않은 채 도착하는 자리**이기도 하기 때문이다.
+
+  이어서 **게이트를 무효화하던 경로 두 개를 끊었다.** ①`executing-plans`는 "subagent가 있으면 무조건 `subagent-driven-development`를 쓰라"고 지시해, ③을 고른 사람이 두 홉 만에 ②로 되돌려졌다 — 이제 그 안내는 **슬롯이 비어 있을 때만** 발화한다. ②`writing-plans`는 자체적으로 "subagent냐 inline이냐" 2지선다를 따로 물어, ①이 통째로 빠진 채 결정이 두 번 내려졌다 — 이제 게이트로 넘긴다. 함께 `description` 3개가 "session"이라는 같은 단어를 서로 다른 축(어느 세션에서 실행하나 / 누가 코드를 쓰나)으로 쓰던 것을 **구현자 축 하나로** 통일했다.
 
 **스크립트 없는 변형을 별도 스킬로 두지 않은 이유**
 

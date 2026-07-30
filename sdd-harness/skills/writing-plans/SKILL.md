@@ -62,7 +62,7 @@ independently testable deliverable.
 ```markdown
 # [Feature Name] Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use sdd-harness:subagent-driven-development (recommended) or sdd-harness:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use sdd-harness:choosing-an-implementer to settle who writes the code, then the skill it routes you to, and implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** [One sentence describing what this builds]
 
@@ -171,20 +171,13 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 ## Execution Handoff
 
-After saving the plan, offer execution choice:
+After saving the plan, report it and hand off the implementer decision:
 
-**"Plan complete and saved to `docs/plans/<filename>.md`. Two execution options:**
+**"Plan complete and saved to `docs/plans/<filename>.md`."**
 
-**1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
+- **REQUIRED SUB-SKILL:** Use sdd-harness:choosing-an-implementer, then the skill it routes you to.
 
-**2. Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
-
-**Which approach?"**
-
-**If Subagent-Driven chosen:**
-- **REQUIRED SUB-SKILL:** Use sdd-harness:subagent-driven-development
-- Fresh subagent per task + two-stage review
-
-**If Inline Execution chosen:**
-- **REQUIRED SUB-SKILL:** Use sdd-harness:executing-plans
-- Batch execution with checkpoints for review
+Do not ask a two-option "subagent or inline?" question here. That framing drops the third
+option — an out-of-harness CLI agent — and offers a menu where choosing-an-implementer
+offers a recommendation. Asking twice with different option sets is how a decision gets
+made and then quietly re-made.

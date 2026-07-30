@@ -1,6 +1,6 @@
 ---
 name: subagent-driven-development
-description: Use when executing implementation plans with independent tasks in the current session
+description: Use when executing an implementation plan whose tasks are mostly independent, by dispatching a fresh implementer subagent per task with a review after each
 ---
 
 # Subagent-Driven Development
@@ -24,23 +24,27 @@ ledger and the tool results carry the record.
 digraph when_to_use {
     "Have implementation plan?" [shape=diamond];
     "Tasks mostly independent?" [shape=diamond];
-    "Stay in this session?" [shape=diamond];
+    "Implementer settled?" [shape=diamond];
+    "choosing-an-implementer" [shape=box];
     "subagent-driven-development" [shape=box];
     "executing-plans" [shape=box];
+    "One dispatch per task to the CLI agent" [shape=box];
     "Manual execution or brainstorm first" [shape=box];
 
     "Have implementation plan?" -> "Tasks mostly independent?" [label="yes"];
     "Have implementation plan?" -> "Manual execution or brainstorm first" [label="no"];
-    "Tasks mostly independent?" -> "Stay in this session?" [label="yes"];
+    "Tasks mostly independent?" -> "Implementer settled?" [label="yes"];
     "Tasks mostly independent?" -> "Manual execution or brainstorm first" [label="no - tightly coupled"];
-    "Stay in this session?" -> "subagent-driven-development" [label="yes"];
-    "Stay in this session?" -> "executing-plans" [label="no - parallel session"];
+    "Implementer settled?" -> "choosing-an-implementer" [label="no"];
+    "Implementer settled?" -> "subagent-driven-development" [label="in-harness subagent"];
+    "Implementer settled?" -> "executing-plans" [label="you"];
+    "Implementer settled?" -> "One dispatch per task to the CLI agent" [label="out-of-harness CLI"];
 }
 ```
 
-**vs. Executing Plans (parallel session):**
-- Same session (no context switch)
-- Fresh subagent per task (no context pollution)
+**vs. Executing Plans:**
+- A fresh subagent implements each task; there, you implement every task yourself
+- No context pollution between tasks, and your own context stays on coordination
 - Review after each task (spec compliance + code quality), broad review at the end
 - Faster iteration (no human-in-loop between tasks)
 

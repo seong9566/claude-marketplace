@@ -46,9 +46,10 @@ Costs harness tokens but saves your main context. The advantage is that CLAUDE.m
 project rules, and hooks load automatically and fire as usual — nothing has to be
 excerpted, so nothing leaks in the excerpting.
 
-### ③ You, in this session
+### ③ You
 
-No round-trip and no handoff loss. Highest main-context burn.
+You write the code yourself, here in this conversation. No round-trip and no handoff
+loss. Highest main-context burn.
 
 ## Recommend, don't just list
 
@@ -80,7 +81,7 @@ implication in each option's description — that is what the decision turns on.
 | --- | --- |
 | ① | Dispatch one task per job to the CLI agent, with the rule excerpts that task needs |
 | ② | `sdd-harness:subagent-driven-development` — see its "Without the Bundled Scripts" section if bash is unavailable |
-| ③ | `sdd-harness:executing-plans` |
+| ③ | `sdd-harness:executing-plans` — it also notes that subagents are usually stronger; that note is for an open slot and does not re-open yours |
 
 **No nesting.** Do not route work through an in-harness implementer subagent that then
 re-delegates to the CLI agent. That is a layer and a bill for nothing. Pick one
