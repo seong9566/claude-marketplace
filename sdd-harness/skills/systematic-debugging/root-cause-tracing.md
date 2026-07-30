@@ -104,6 +104,8 @@ Use the bisection script `find-polluter.sh` in this directory:
 ./find-polluter.sh '.git' 'src/**/*.test.ts'
 ```
 
+Run it while the pollution target does not already exist.
+
 Runs tests one-by-one, stops at first polluter. See script for usage.
 
 ## Real Example: Empty projectDir

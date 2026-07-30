@@ -44,7 +44,7 @@ done < <(find "$TPL" -type f | sort)
 
 echo
 echo "vault: $TARGET"
-echo "폴더 $made_d개 생성 · 파일 $made_f개 생성 · $skipped개 건너뜀"
+echo "폴더 ${made_d}개 생성 · 파일 ${made_f}개 생성 · ${skipped}개 건너뜀"
 if [ "$made_f" -gt 0 ]; then
   echo
   echo "다음: wiki/index.md 의 프로젝트 절은 비어 있다. 첫 프로젝트는 project-scaffold 로 승격한다."

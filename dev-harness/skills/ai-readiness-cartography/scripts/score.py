@@ -949,10 +949,13 @@ def build_report(repo: Path) -> Report:
         "F": score_f(modules, repo),
         "G": score_g(repo),
     }
-    raw_total = sum(c.score for c in cats.values())
+    for c in cats.values():
+        if c.na:
+            c.score = 0
+    raw_total = sum(c.score for c in cats.values() if not c.na)
     applicable_max = sum(c.denom() for c in cats.values()) or 1
     # personal fork: renormalize to /100 over applicable categories (E2 + G excluded as N/A)
-    total = round(raw_total / applicable_max * 100)
+    total = min(100, round(raw_total / applicable_max * 100))
     grade, color = grade_label(total)
     actions = derive_actions(cats, modules, large_files, repo, ctx_layer)
     insights = generate_insights(cats, total)
@@ -1034,7 +1037,7 @@ def render_markdown(report: Report) -> str:
     for k, c in report.categories.items():
         if not c.findings:
             continue
-        lines.append(f"### {k}. {c.name}  ({c.score}/{c.max})")
+        lines.append(f"### {k}. {c.name}  ({c.score}/{c.denom()})")
         for f in c.findings:
             lines.append(f"- {f}")
     lines.append("")
