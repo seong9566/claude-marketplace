@@ -28,6 +28,24 @@ Write the test first. Watch it fail. Write minimal code to pass.
 
 Thinking "skip TDD just this once"? Stop. That's rationalization.
 
+### Scope the repo already defined wins
+
+If the repo enforces TDD mechanically — a pre-commit or PreToolUse hook, a CI gate, a config
+that **names exempt paths** (UI, wiring, generated files, entry points) — that list is your
+human partner's standing decision about *where* TDD applies. Follow it. Don't argue for wider
+coverage than they chose, and don't treat their exemption as license to skip TDD on the paths
+the hook does guard.
+
+Two conditions, both required:
+
+1. **Read the file before you claim an exemption.** Name the hook and quote the line that
+   exempts your path. "This feels like UI" is not the same as the hook exempting it.
+2. **No such list? The Iron Law is unchanged.** Absence of a hook is not a scope decision —
+   it means nobody narrowed it, so the default stands. A repo without enforcement is the
+   *most* common case, not an exemption.
+
+This is a scope rule, never a timing rule. Inside the guarded paths, test still comes first.
+
 ## The Iron Law
 
 ```
@@ -205,6 +223,8 @@ When writing or changing any test, read [writing-good-tests.md](writing-good-tes
 | "TDD will slow me down" | TDD IS the pragmatic path: catches bugs before commit, prevents regressions, lets you refactor without fear. "Pragmatic" shortcuts mean debugging in production — slower, not faster. |
 | "Manual test faster" | Manual doesn't prove edge cases. You'll re-test every change. |
 | "Existing code has no tests" | You're improving it. Add tests for existing code. |
+| "This repo isn't TDD-absolutist" | Only true if a hook or config **names** the exempt paths, and only for those paths — see "Scope the repo already defined wins". Quote the line. No such file means nobody narrowed the scope, so the Iron Law stands. |
+| "Deleting now is irreversible; rewriting under deadline is worse code" | Both true, and neither is the choice in front of you. The choice is untested code you'll ship vs. code you can trust. If the deadline genuinely rules out a rewrite, that is an exception to **ask your human partner for** — not one to grant yourself and then log as done. |
 
 ## Red Flags - STOP and Start Over
 
