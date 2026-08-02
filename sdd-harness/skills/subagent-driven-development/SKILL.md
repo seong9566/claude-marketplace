@@ -7,7 +7,18 @@ description: Use when executing an implementation plan whose tasks are mostly in
 
 Execute plan by dispatching a fresh implementer subagent per task, a task review (spec compliance + code quality) after each, and a broad whole-branch review at the end.
 
-**First:** this skill fills the implementer slot with an in-harness subagent. If it is not already settled that that is the right slot for this plan — rather than an out-of-harness CLI agent or you — use sdd-harness:choosing-an-implementer before dispatching anything.
+**⛔ Gate — before dispatching anything.** This skill fills the implementer slot with an
+in-harness subagent. Before you dispatch, fill this sentence in using your human partner's
+**actual words**:
+
+> "The implementer is ______. My human partner chose that, and what they said was: ______."
+
+**Cannot fill the second blank with something they actually said? Then it is not settled.**
+Call `sdd-harness:choosing-an-implementer` first. Do not judge whether it "seems settled" —
+run the sentence. "Follow the plan" / "just execute it" says *when* to begin, not *who*
+writes the code; deadlines and "stop asking questions" do not waive this. The one exemption
+is a session barred from writing code at all — then say in your final report that the
+implementer slot was left open.
 
 **Why subagents:** You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
 

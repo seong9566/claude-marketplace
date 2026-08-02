@@ -11,7 +11,30 @@ Load plan, review critically, execute all tasks, report when complete.
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
-**First:** if it is not already settled who writes the code for this plan — an out-of-harness CLI agent, an in-harness subagent, or you — use sdd-harness:choosing-an-implementer before Step 1. Landing here does not mean option ③ was chosen; it is also where you arrive having chosen nothing.
+## ⛔ Gate — do not start at Step 1
+
+Landing here does not mean option ③ was chosen. It is also where you arrive having chosen
+nothing. So before Step 1, fill this sentence in using your human partner's **actual words**:
+
+> "The implementer is ______. My human partner chose that, and what they said was: ______."
+
+**Cannot fill the second blank with something they actually said? Then it is not settled.**
+Call `sdd-harness:choosing-an-implementer` now, and do not come back to Step 1 without its
+answer. Do not judge whether it "seems settled" — run the sentence.
+
+- **"Follow the plan" / "just execute it" / "start now" is not a choice of implementer.**
+  Those say *when* to begin, not *who* writes the code. Reading them as a choice makes you
+  report an execution path your human partner never picked.
+- **Deadlines, repeated nudges, and "stop asking questions" do not waive this gate.** They
+  are the conditions under which it gets skipped, which is why it is written down. Pressure
+  means ask **once, with a recommendation attached** — not don't ask.
+- **Only exemption:** this session is barred from writing code at all (investigation,
+  verification, or review only). Then skip the gate — but **state in your final report that
+  the implementer slot was left open**, so the next session opens it instead of inheriting a
+  choice nobody made.
+- If the plan has 3+ mostly independent tasks, your recommendation defaults to
+  `sdd-harness:subagent-driven-development`. Say so **while the slot is still open** — once
+  it closes, that advice is spent.
 
 **Note:** Where subagents are available (Claude Code, Codex CLI, Codex App, Copilot CLI, and Gemini CLI all qualify), sdd-harness:subagent-driven-development is usually the stronger workflow — say so **while the implementer slot is still open**. Once choosing-an-implementer has settled on ③, that answer stands and you execute here. Re-routing to subagents at this point spends a decision your human partner already made.
 
