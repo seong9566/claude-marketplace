@@ -95,3 +95,15 @@ PRD를 읽고 **feature-first vs layer-first**를 bounded context 결합도로 �
 `ai-readiness-cartography`·`improve-token-efficiency`는 `python3`가 필요하다.
 
 > ⚠️ **다섯 이름 모두 개인 스킬로 흔히 쓰는 이름이다.** `~/.claude/skills/`에 같은 이름이 있어도 서로 덮어쓰지는 않지만(`dev-harness:code-review` vs `code-review`), 어느 쪽을 부르는지 헷갈리기 쉽다. 상세: [`dev-harness/README.md` §이름 충돌](dev-harness/README.md#이름-충돌).
+
+## 이 repo를 고칠 때
+
+**플러그인 파일을 고치면 같은 커밋에서 그 플러그인의 `.claude-plugin/plugin.json` `version`을 올린다.**
+
+Claude Code는 이 clone이 아니라 `plugins/cache/<플러그인>/<버전>/` 스냅샷을 읽고, 그 스냅샷은 `version`이 바뀔 때만 새로 만들어진다. 안 올리면 갱신이 조용히 건너뛰어진다 — `claude plugin update`가 `already at the latest version`이라고 답해서 실패가 성공처럼 보인다. 이 함정에 두 번 걸렸다(`2fc1600` dev-harness · `e4d07ab` obsidian-pm).
+
+`hooks/pre-push`가 이를 막는다. 클론한 뒤 한 번 걸어준다:
+
+```
+ln -s ../../hooks/pre-push .git/hooks/pre-push
+```
