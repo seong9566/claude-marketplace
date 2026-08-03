@@ -86,6 +86,12 @@ onTap: () => context.push(RoutePath.patrolProgress, extra: {'mode':'new'}),
 owner_repo=$(gh repo view --json nameWithOwner -q .nameWithOwner)
 gh api "repos/$owner_repo/pulls/<PR#>/reviews" --method POST --input review.json
 ```
+- **게시 전에 앵커를 diff와 대조한다 — 하나라도 틀리면 API가 리뷰 전체를 거부한다.** `gh pr diff <PR#>`로 실제 `path`와 RIGHT 라인 범위를 뽑아 `review.json`의 모든 `path:line`을 확인한 뒤 POST한다. 부분 실패가 아니라 **전량 실패**이며(코멘트 0건 게시), 흔한 원인은 엔진이 준 경로가 repo 루트 기준이 아니거나(워크트리 접두·`./` 접두) 리네임 전 경로인 경우다.
+  ```bash
+  gh pr diff <PR#> --name-only          # path 유효성
+  gh pr diff <PR#> | grep -n '^@@'      # 각 파일의 RIGHT hunk 범위
+  ```
+  대조에서 탈락한 발견은 버리지 말고 요약 body 하단으로 옮긴다(아래 규칙과 같은 처리).
 - `line`(다중행이면 `start_line`+`start_side`+`line`)은 **diff에 존재하는 RIGHT 라인**만 가능. 없는 줄 지적은 comments에서 빼고 요약 body 하단에 `파일:라인`으로 짧게.
 - 확신도 **≥0.8만** comments로. `path:line`은 엔진 출력의 file·line_start/end.
 - 발견은 **컨트롤러가 차단/유지 평가** 후 사용자에게 요약.

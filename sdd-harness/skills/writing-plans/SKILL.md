@@ -157,6 +157,15 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - Steps that describe what to do without showing how (code blocks required for code steps)
 - References to types, functions, or methods not defined in any task
 
+**Exception — framework-binding native code.** Where the code binds to a platform
+framework (CallKit, Telecom, PushKit, platform channels, lifecycle callbacks), state the
+**invariants** the implementation must hold — required call order, which thread, which
+callback owns teardown, what must be idempotent — instead of verbatim sample code.
+Plan-authored samples for these bindings have been the defect source five times: the plan
+cannot check them against the SDK, the implementer trusts them over the real docs, and
+review reads them as already-decided. Verbatim code stays the rule for **pure logic**,
+where correctness can be judged by reading it.
+
 ## Self-Review
 
 After writing the complete plan, look at the spec with fresh eyes and check the plan against it. This is a checklist you run yourself — not a subagent dispatch.
@@ -166,6 +175,12 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 **2. Placeholder scan:** Search your plan for red flags — any of the patterns from the "No Placeholders" section above. Fix them.
 
 **3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
+
+**4. Symbol grounding — grep, don't recall:** Every symbol, path, and helper the plan references must *already exist in the repo* or be created by an earlier task in this same plan. Grep each one. Steps 1–3 compare the plan against itself and the spec; this is the only step that compares it against the codebase. A plan that calls `AuthRepository.refresh()` when the repo only has `refreshToken()` sends the implementer off to invent an API.
+
+**5. Name collision:** Grep every new class, provider, and file name you introduce. If the name already exists in another feature, the implementer either shadows it or imports the wrong one — and both compile.
+
+**6. Test expectations:** For each test the plan writes, ask whether the expected value describes *correct* behavior or merely records *current* behavior. A plan that pins the bug in an assertion turns Red-Green into a ratchet. Watch fixtures where two values coincide by accident — an assertion that passes for the wrong reason reads as coverage and provides none.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
