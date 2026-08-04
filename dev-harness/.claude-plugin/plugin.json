@@ -1,6 +1,6 @@
 {
   "name": "dev-harness",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "개발 세션 보조 스킬 5종 — AI-Ready 저장소 감사, PR 코드리뷰, 계획 스트레스 테스트(grilling)와 그 별칭(grill-me), 세션 토큰 효율 분석. ⚠️ 다섯 이름 모두 개인 스킬로 흔한 이름이라 ~/.claude/skills/ 사본과 헷갈리기 쉽다 — 부를 때 dev-harness: 접두를 붙인다(README §이름 충돌).",
   "author": {
     "name": "HyeonSeong",
