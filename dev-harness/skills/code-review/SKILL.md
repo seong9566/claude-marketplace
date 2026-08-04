@@ -43,6 +43,7 @@ node "$CC" \
 - **범위 제한 문구는 `$prompt`로 합쳐 넘긴다** — policy §적대 스탠스의 '상시 포함'은 focus가 **없는** 저Risk PR에서도 붙어야 한다. focus 자리표시자만 넘기면 저Risk에서 그 문구가 통째로 빠져 규약이 무력화된다.
 - 작은 PR은 `--wait`, 큰 PR은 `--background`(완료는 `/codex:status`). 인증 1개 공유라 워크트리 여러 개 **동시 리뷰 금지**(순차).
 - codex의 구조화 출력(파일·line·confidence·recommendation)을 policy §출력 형식으로 옮긴다.
+- **옮기고 나면 `rm -f "$out"`으로 지운다** — raw 출력에는 diff 코드 조각이 그대로 담긴다. 고정 경로일 땐 매번 덮어써서 1개로 유지됐지만 호출마다 새 파일이 되면 **안 지우는 한 계속 쌓인다**. 회수에 실패해 남겼다면 그 경로를 사용자에게 알린다.
 
 ## 폴백
 - codex usage/rate limit이면 재시도 없이 **호스트의 리뷰 명령** `/code-review high --comment` 로 폴백한다(자체 인라인 게시 — 별도 헤더 코멘트 추가 안 함).
