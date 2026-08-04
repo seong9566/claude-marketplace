@@ -29,7 +29,7 @@ if [ -z "$CC" ]; then
   exit 1
 fi
 # 결과 파일은 호출마다 격리한다 — 백그라운드가 기본이라 고정 경로면 동시 실행·재시도가 서로를 덮어쓴다
-out="$(mktemp "${TMPDIR:-/tmp}/cr-raw-XXXXXXXX.md")"
+out="$(mktemp "${TMPDIR:-/tmp}/cr-raw-XXXXXXXX")"   # X는 반드시 끝에 — BSD(macOS) mktemp는 접미사가 붙으면 치환하지 않고 템플릿 그대로 만든다
 # 저장소 범위 제한은 focus 유무와 무관하게 항상 붙인다(policy §적대 스탠스 '상시 포함')
 scope="저장소 밖 경로는 탐색하지 마라 — 리뷰 대상은 이 워크트리 안의 diff와 그 주변 코드뿐이다. 홈 디렉터리·다른 repo·플러그인/스킬 문서를 읽지 마라."
 prompt="$scope <policy §적대 스탠스의 focus 텍스트 — 저Risk면 빈 문자열>"
