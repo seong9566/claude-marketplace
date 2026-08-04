@@ -28,12 +28,14 @@ if [ -z "$CC" ]; then
   echo "codex 플러그인이 없다 — 이 스킬을 쓸 수 없으니 사용자에게 알리고 중단한다"
   exit 1
 fi
+# 결과 파일은 리뷰마다 격리한다 — 백그라운드가 기본이라 고정 경로면 동시 리뷰가 서로를 덮어쓴다
+out="${TMPDIR:-/tmp}/cr-raw-pr<PR#>-$(git rev-parse --short HEAD).md"
 node "$CC" \
-  adversarial-review --cwd "$PWD" --base "origin/$base" --wait "<policy §적대 스탠스의 focus 텍스트>" > /tmp/cr-raw.md
+  adversarial-review --cwd "$PWD" --base "origin/$base" --wait "<policy §적대 스탠스의 focus 텍스트>" > "$out"
 ```
 - **`--cwd`를 명시하는 이유**: `cd`만으로는 부족하다. Claude Code의 Bash 도구는 **호출마다 cwd를 세션 cwd로 되돌리므로**, 위 `cd`와 `node`가 같은 호출 안에 있지 않으면 companion이 메인 트리에서 돈다(실측: 첫 실행이 메인 트리로 떨어져 오탐). `--cwd`는 review 계열 파서의 `valueOptions`에 있어 `adversarial-review`도 받는다(usage 문자열에만 누락돼 있다). `cd`와 `--cwd`를 **둘 다** 두는 것은 중복이 아니다 — `gh` 명령은 셸 cwd를, companion은 `--cwd`를 따른다.
 - **`origin/`을 붙이는 이유**: `baseRefName`은 `dev`처럼 브랜치명만 준다. 그대로 넘기면 codex가 **로컬 `dev`**를 본다 — 메인 트리는 브랜치 전환·머지가 훅으로 막혀 있어 로컬 base 브랜치가 며칠씩 뒤처지고, 그러면 **이미 머지된 남의 PR이 diff에 섞여** 오탐이 난다(2026-07-27 PR #96 실측: 로컬 `dev`가 6일 전 커밋이라 PR #92·#93 머지분까지 리뷰 대상에 들어갔다).
-- **이 Bash 호출은 `run_in_background: true`로 띄운다.** Bash 도구 기본 타임아웃은 2분인데 리뷰는 그보다 오래 걸리고, 타임아웃이 나면 **codex 워커가 함께 죽어** 리뷰가 통째로 날아간다. 백그라운드로 띄우면 하네스가 종료를 알려준다. companion `--wait`의 자체 타임아웃(기본 4분)과는 별개 문제다 — `--wait`를 줄여도 Bash 쪽 2분이 먼저 끊는다.
+- **이 Bash 호출은 `run_in_background: true`로 띄운다.** Bash 도구 기본 타임아웃은 2분인데 리뷰는 그보다 오래 걸리고, 타임아웃이 나면 **codex 워커가 함께 죽어** 리뷰가 통째로 날아간다. 백그라운드로 띄우면 하네스가 종료를 알려준다. companion `--wait`의 자체 타임아웃(기본 4분)과는 별개 문제다 — `--wait`를 줄여도 Bash 쪽 2분이 먼저 끊는다. **결과 파일은 위 `$out`처럼 PR·HEAD로 격리한다** — 백그라운드가 기본이면 고정 경로가 동시 리뷰끼리 서로를 덮어쓴다(아래 "동시 리뷰 금지"는 문서 규칙일 뿐 강제되지 않는다).
 - 작은 PR은 `--wait`, 큰 PR은 `--background`(완료는 `/codex:status`). 인증 1개 공유라 워크트리 여러 개 **동시 리뷰 금지**(순차).
 - codex의 구조화 출력(파일·line·confidence·recommendation)을 policy §출력 형식으로 옮긴다.
 
