@@ -52,7 +52,9 @@ Honor any existing declared preference without asking. If the user declines cons
 
 The user has asked for an isolated workspace (Step 0 consent). Do you already have a way to create a worktree? It might be a tool with a name like `EnterWorktree`, `WorktreeCreate`, a `/worktree` command, a `--worktree` flag, or a CLI the repo standardizes on (e.g. `orca worktree create`). If you do, use it and skip to Step 2.
 
-**Check the repo's CLAUDE.md before you pick one.** If it names the command to use — or rules one out — that wins over your own detection. A harness-native tool the repo has excluded (because it forces a branch name, a base ref, or a directory the repo cannot accept) is the wrong mechanism there, not the preferred one.
+**Check the repo's instruction files before you pick one** — `CLAUDE.md` and `AGENTS.md` (plus any scoped variants your runtime loads; not every runtime is given both). If one names the command to use — or rules one out — that wins over your own detection. A harness-native tool the repo has excluded (because it forces a branch name, a base ref, or a directory the repo cannot accept) is the wrong mechanism there, not the preferred one.
+
+**A CLI is not a context switch.** Harness tools like `EnterWorktree` move your session into the worktree; a CLI subprocess cannot change its caller's working directory. If you used a CLI, capture the path it created, enter it, and re-run the Step 0 check. If `GIT_DIR != GIT_COMMON` does not hold afterward, stop and report — do not proceed to Step 2 claiming isolation you don't have.
 
 Native tools handle directory placement, branch creation, and cleanup automatically. Using `git worktree add` when you have a native tool creates phantom state your harness can't see or manage.
 
