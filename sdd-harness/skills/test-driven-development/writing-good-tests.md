@@ -44,6 +44,14 @@ on redesign and sleeps through bugs. Test the behavior that depends on
 the decision: not `expect(MAX_RETRIES).toBe(5)` but "a failing call is
 retried 5 times and the 6th attempt never happens."
 
+**Don't let a settle helper skip past the break.** Helpers that advance
+until everything is quiet — `pumpAndSettle`, `waitFor`, `flushAll` — run
+a retry-or-backoff path to its last attempt, leaving only the eventual
+success observable. The first failure, the wait between attempts, and
+every intermediate state are gone, so the test passes with or without
+the fix you wrote it for. Advance time by a bounded amount and assert
+the state at the step you meant to test.
+
 **Behavior, not text.** Asserting that a script, skill, or config
 contains an exact line proves only that the source is the source. Run
 scripts against controlled inputs and assert outputs, side effects, or
@@ -121,6 +129,12 @@ in reality — all documented fields — not just the ones your test reads.
 Partial mocks fail silently when downstream code reads an omitted field:
 the test passes while integration breaks.
 
+**Setup helpers assert what they promise.** A helper that seeds state —
+a signed-in session, a populated store, a mounted route — can fail
+quietly and hand the test an empty world. Assert inside the helper that
+the state now holds, so a broken helper reports itself instead of
+surfacing as a failure in the subject you were testing.
+
 **Production classes carry production methods only.** Cleanup that only
 tests need lives in test utilities, never as a `destroy()` on the
 production class. Ask: is this method called only from tests? Does this
@@ -190,6 +204,8 @@ test as tautological.
 - The test fails on every intentional change, never on accidental breakage
 - Expected values are hidden behind loops, builders, or helpers
 - The test greps source text, or asserts a removed symbol stays removed
+- A settle-until-quiet helper carries a retrying path to its last attempt
+- A setup helper can fail without the test noticing
 - The test would still matter if only the framework remained
 - The test exists for coverage, checking no side effect or outcome
 - An assertion checks a `*-mock` test ID, or fails if you remove the mock

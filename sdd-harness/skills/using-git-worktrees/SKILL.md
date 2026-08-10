@@ -111,6 +111,13 @@ cd "$path"
 
 ## Step 2: Project Setup
 
+**A worktree inherits only tracked files.** Dependencies, caches, and generated
+sources that the repo gitignores are simply absent — Step 3 then fails to
+compile and reads as a broken baseline. Setup exists to regenerate them.
+
+If the Step 1a tool already ran setup (some repo CLIs do), confirm the outputs
+are there rather than running it again.
+
 Auto-detect and run appropriate setup:
 
 ```bash
@@ -126,6 +133,13 @@ if [ -f pyproject.toml ]; then poetry install; fi
 
 # Go
 if [ -f go.mod ]; then go mod download; fi
+
+# Dart / Flutter
+if [ -f pubspec.yaml ]; then
+  if grep -q 'sdk: flutter' pubspec.yaml; then flutter pub get; else dart pub get; fi
+  # Codegen output is commonly gitignored, so a fresh worktree has none
+  if grep -q 'build_runner' pubspec.yaml; then dart run build_runner build; fi
+fi
 ```
 
 ## Step 3: Verify Clean Baseline
