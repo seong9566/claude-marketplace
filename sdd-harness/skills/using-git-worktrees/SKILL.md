@@ -116,12 +116,15 @@ sources that the repo gitignores are simply absent — Step 3 then fails to
 compile and reads as a broken baseline. Setup exists to regenerate them.
 
 **But this step also runs in place**, when the user declined a worktree or the
-sandbox fallback applied. So any setup that writes into the source tree — code
-generators above all — has to confirm its output is really missing first.
-Rerunning one over a live checkout rewrites files the user is working in, and
-where the repo tracks generated sources it puts them straight into the diff.
-If the Step 1a tool already ran setup (some repo CLIs do), confirm the outputs
-are there rather than running it again.
+sandbox fallback applied — which changes what is safe to run. Installing
+dependencies is idempotent; **code generation is not**. Generators rewrite the
+source tree, so outside a worktree you just made they can overwrite work in
+progress, and where the repo tracks their output they drop it into the diff.
+Checking first does not rescue it: one generated file says nothing about the
+other two hundred, and builders differ in what they emit, so probing for a file
+confuses missing output with partial or stale output. Generate in a worktree you
+just created; anywhere else, ask. If the Step 1a tool already ran setup (some
+repo CLIs do), confirm the outputs are there rather than running it again.
 
 Auto-detect and run appropriate setup:
 
@@ -142,11 +145,6 @@ if [ -f go.mod ]; then go mod download; fi
 # Dart / Flutter
 if [ -f pubspec.yaml ]; then
   if grep -q 'sdk: flutter' pubspec.yaml; then flutter pub get; else dart pub get; fi
-  # Codegen writes into the source tree — only run it where its output is missing
-  if grep -q 'build_runner' pubspec.yaml && \
-     [ -z "$(find lib -name '*.g.dart' -o -name '*.freezed.dart' 2>/dev/null | head -1)" ]; then
-    dart run build_runner build
-  fi
 fi
 ```
 
