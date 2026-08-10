@@ -111,6 +111,31 @@ cd "$path"
 
 ## Step 2: Project Setup
 
+**A worktree inherits only tracked files.** Dependencies, caches, and generated
+sources that the repo gitignores are simply absent — Step 3 then fails to
+compile and reads as a broken baseline. Setup exists to regenerate them.
+
+**How much of it you run depends on how you got here**, because these paths do
+not own the same files. Branch on what *you* did — that is the only part of the
+tree's history you actually know. Take the first that matches:
+
+- **In place** — consent declined, or the sandbox fallback. This is the user's
+  working tree. Installs can mutate it too, through lockfiles and
+  `postinstall`-style hooks, so check what the repo's setup actually does and
+  ask before running anything that rewrites tracked files.
+- **A worktree you did not create** — Step 0 found you already in one. It tells
+  you the tree is linked, nothing about what has been run there. Install
+  dependencies, but ask before generating: you cannot tell a tree still
+  awaiting setup from one whose output you would be overwriting.
+- **A worktree you created in Step 1** — you know what has run in it. If the
+  Step 1a tool reported doing setup, confirm the outputs rather than repeating
+  it; otherwise run everything, generators included. Nothing here is anyone's
+  work in progress.
+
+Don't try to replace that distinction with a file check: one generated file says
+nothing about the other two hundred, and builders differ in what they even emit,
+so probing for output confuses *missing* with *partial* or *stale*.
+
 Auto-detect and run appropriate setup:
 
 ```bash
@@ -126,7 +151,21 @@ if [ -f pyproject.toml ]; then poetry install; fi
 
 # Go
 if [ -f go.mod ]; then go mod download; fi
+
+# Dart / Flutter
+if [ -f pubspec.yaml ]; then
+  if grep -q 'sdk: flutter' pubspec.yaml; then flutter pub get; else dart pub get; fi
+fi
 ```
+
+**Generated sources.** Where a repo generates sources and gitignores the output
+— `build_runner`, protobuf, ORM schemas — installing dependencies is not enough:
+a worktree you just created has none of it, and Step 3 fails to compile on
+missing files rather than on anything you did. Run the repo's generator there
+(`dart run build_runner build` for Dart; elsewhere whatever `CLAUDE.md` /
+`AGENTS.md` names), and re-read the branches above before running it anywhere
+else. This is the setup step that writes into the source tree, which is why the
+freshly-created branch is the only one that runs it unasked.
 
 ## Step 3: Verify Clean Baseline
 

@@ -178,9 +178,15 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 **4. Symbol grounding — grep, don't recall:** Every symbol, path, and helper the plan references must *already exist in the repo* or be created by an earlier task in this same plan. Grep each one. Steps 1–3 compare the plan against itself and the spec; this is the only step that compares it against the codebase. A plan that calls `AuthRepository.refresh()` when the repo only has `refreshToken()` sends the implementer off to invent an API.
 
+Existing is not the same as usable — read the declaration your grep landed on, not just its line number. Two hits pass the existence check and still mislead: a symbol whose declaration carries a deprecation marker, and a private member whose name repeats in another file, where the hit you read may not be the one the plan's file resolves.
+
 **5. Name collision:** Grep every new class, provider, and file name you introduce. If the name already exists in another feature, the implementer either shadows it or imports the wrong one — and both compile.
 
 **6. Test expectations:** For each test the plan writes, ask whether the expected value describes *correct* behavior or merely records *current* behavior. A plan that pins the bug in an assertion turns Red-Green into a ratchet. Watch fixtures where two values coincide by accident — an assertion that passes for the wrong reason reads as coverage and provides none.
+
+**7. Repo idiom fit:** Step 4 proves the names exist; this checks the code you wrote *around* them. Every snippet in the plan has to survive this repo's linter and type checker, so compare it against the linter config and against neighboring files that do the same kind of work — annotations the repo does not use, argument values its lint calls redundant, an import order it enforces. Each of these is a convention you can only get right by reading the repo; recalling one from another project puts the defect in the plan, where an implementer will reproduce it verbatim and review will read it as already decided.
+
+**8. Verification scope matches the blast radius:** Each task's verify step names the command the implementer runs, and by default that command is scoped to the code the task touches. Where a task widens a shared interface — a new method on an abstract type, a changed signature — that scope is too narrow: implementations live wherever someone wrote one, including fakes in test directories the task never mentions. Scope those tasks' checks to the whole project.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 

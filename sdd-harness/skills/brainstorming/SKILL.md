@@ -25,7 +25,7 @@ Every project goes through this process. A todo list, a single-function utility,
 
 You MUST create a task for each of these items and complete them in order:
 
-1. **Explore project context** — check files, docs, recent commits
+1. **Explore project context** — check files, docs, recent commits. Grep the request's own nouns against the design, architecture, and decision documents before question one: a rule that already exists is where the interview starts, not what it produces.
 2. **Offer the visual companion just-in-time** — NOT upfront. The first time a question would genuinely be clearer shown than described, offer it then (its own message); on approval its browser tab opens for you. If no visual question ever arises, never offer it. See the Visual Companion section below.
 3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria. When the answer is a decision, an approval, or a choice between options, ask it through your runtime's structured-choice tool (`AskUserQuestion` on Claude Code) rather than burying the question in prose — the user should be able to pick, not compose.
 4. **Propose 2-3 approaches** — with trade-offs and your recommendation
@@ -68,7 +68,7 @@ digraph brainstorming {
 
 **Understanding the idea:**
 
-- Check out the current project state first (files, docs, recent commits)
+- Check out the current project state first (files, docs, recent commits) — and search that state for the topic you are about to ask about. A spec written on top of a rule the repo already documented has to be rewritten once someone opens that document, and the answers the user already gave you get reopened with it. Where a document does rule on the question, bring it into the interview: confirm it still holds, and ask about what it leaves open. Watch for conditions it attaches — a rule that applies only alongside some other change constrains scope, and missing that is how an approved design turns out to be unbuildable.
 - Before asking detailed questions, assess scope: if the request describes multiple independent subsystems (e.g., "build a platform with chat, file storage, billing, and analytics"), flag this immediately. Don't spend questions refining details of a project that needs to be decomposed first.
 - If the project is too large for a single spec, help the user decompose into sub-projects: what are the independent pieces, how do they relate, what order should they be built? Then brainstorm the first sub-project through the normal design flow. Each sub-project gets its own spec → plan → implementation cycle.
 - For appropriately-scoped projects, ask questions one at a time to refine the idea
