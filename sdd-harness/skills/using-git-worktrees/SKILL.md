@@ -116,17 +116,17 @@ sources that the repo gitignores are simply absent — Step 3 then fails to
 compile and reads as a broken baseline. Setup exists to regenerate them.
 
 **How much of it you run depends on how you got here**, because these paths do
-not own the same files:
+not own the same files. Take the first that matches:
 
-- **You just created the worktree** (Step 1) — run everything, generators
-  included. Nothing in it is anyone's work in progress.
-- **You were already in one** (Step 0), or a Step 1a tool created and set it up
-  — someone else prepared this tree. Confirm the outputs are there instead of
-  regenerating over them.
-- **You are in place** (consent declined, or the sandbox fallback) — this is the
-  user's working tree. Installs can mutate it too, through lockfiles and
+- **In place** — consent declined, or the sandbox fallback. This is the user's
+  working tree. Installs can mutate it too, through lockfiles and
   `postinstall`-style hooks, so check what the repo's setup actually does and
   ask before running anything that rewrites tracked files.
+- **A worktree something has already set up** — a Step 1a tool that reports
+  having done so, or one Step 0 found you in. Confirm the outputs are there
+  instead of regenerating over them.
+- **A worktree you just created, with nothing run in it yet** — run everything,
+  generators included. Nothing in it is anyone's work in progress.
 
 Don't try to replace that distinction with a file check: one generated file says
 nothing about the other two hundred, and builders differ in what they even emit,
