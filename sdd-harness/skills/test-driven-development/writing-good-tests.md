@@ -44,13 +44,16 @@ on redesign and sleeps through bugs. Test the behavior that depends on
 the decision: not `expect(MAX_RETRIES).toBe(5)` but "a failing call is
 retried 5 times and the 6th attempt never happens."
 
-**Don't let a settle helper skip past the break.** Helpers that advance
-until everything is quiet — `pumpAndSettle`, `waitFor`, `flushAll` — run
-a retry-or-backoff path to its last attempt, leaving only the eventual
-success observable. The first failure, the wait between attempts, and
-every intermediate state are gone, so the test passes with or without
-the fix you wrote it for. Advance time by a bounded amount and assert
-the state at the step you meant to test.
+**Don't let a settle helper skip past the break.** Some waits run until
+nothing is pending — `pumpAndSettle`, `runAllTimers`, `flushAll`. Aimed
+at a path that retries with backoff, they carry it to its final attempt
+and leave only the eventual success observable: the first failure, the
+wait between attempts, and every intermediate state are gone, so the
+test passes with or without the fix you wrote it for. Draining the queue
+is the problem, not waiting — waiting for a *named condition* still
+lands on the step you care about (`waitFor(() => firstAttemptFailed)`;
+see sdd-harness:systematic-debugging). Where timers drive the retry,
+advance the clock a bounded amount and assert there.
 
 **Behavior, not text.** Asserting that a script, skill, or config
 contains an exact line proves only that the source is the source. Run
