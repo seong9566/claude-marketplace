@@ -115,16 +115,22 @@ cd "$path"
 sources that the repo gitignores are simply absent — Step 3 then fails to
 compile and reads as a broken baseline. Setup exists to regenerate them.
 
-**But this step also runs in place**, when the user declined a worktree or the
-sandbox fallback applied — which changes what is safe to run. Installing
-dependencies is idempotent; **code generation is not**. Generators rewrite the
-source tree, so outside a worktree you just made they can overwrite work in
-progress, and where the repo tracks their output they drop it into the diff.
-Checking first does not rescue it: one generated file says nothing about the
-other two hundred, and builders differ in what they emit, so probing for a file
-confuses missing output with partial or stale output. Generate in a worktree you
-just created; anywhere else, ask. If the Step 1a tool already ran setup (some
-repo CLIs do), confirm the outputs are there rather than running it again.
+**How much of it you run depends on how you got here**, because these paths do
+not own the same files:
+
+- **You just created the worktree** (Step 1) — run everything, generators
+  included. Nothing in it is anyone's work in progress.
+- **You were already in one** (Step 0), or a Step 1a tool created and set it up
+  — someone else prepared this tree. Confirm the outputs are there instead of
+  regenerating over them.
+- **You are in place** (consent declined, or the sandbox fallback) — this is the
+  user's working tree. Installs can mutate it too, through lockfiles and
+  `postinstall`-style hooks, so check what the repo's setup actually does and
+  ask before running anything that rewrites tracked files.
+
+Don't try to replace that distinction with a file check: one generated file says
+nothing about the other two hundred, and builders differ in what they even emit,
+so probing for output confuses *missing* with *partial* or *stale*.
 
 Auto-detect and run appropriate setup:
 
@@ -147,6 +153,15 @@ if [ -f pubspec.yaml ]; then
   if grep -q 'sdk: flutter' pubspec.yaml; then flutter pub get; else dart pub get; fi
 fi
 ```
+
+**Generated sources.** Where a repo generates sources and gitignores the output
+— `build_runner`, protobuf, ORM schemas — installing dependencies is not enough:
+a worktree you just created has none of it, and Step 3 fails to compile on
+missing files rather than on anything you did. Run the repo's generator there
+(`dart run build_runner build` for Dart; elsewhere whatever `CLAUDE.md` /
+`AGENTS.md` names), and re-read the branches above before running it anywhere
+else. This is the setup step that writes into the source tree, which is why the
+freshly-created branch is the only one that runs it unasked.
 
 ## Step 3: Verify Clean Baseline
 
