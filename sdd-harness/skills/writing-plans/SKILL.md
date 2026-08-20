@@ -141,11 +141,23 @@ Step 3. The thing to doubt is the test you just wrote, not the implementation.
   before and after the implementation exists, so nothing ever flags it.
 - **It failed for the wrong reason** → dying on a typo, an import error, or a
   missing fixture is not Red.
+- **It failed for the predicted reason, but only because of how the test is
+  wired** → that is an artifact, not a reproduction. A test that omits a policy
+  the app installs — a retry override, an interceptor, a default the production
+  entrypoint sets — reproduces the harness, not the bug. Name the production
+  path that produces the same failure, then A/B it: keep the app's real
+  configuration, leave the fix out, and confirm the failure still appears.
+  Measured: a plan was written around "the query screen spins forever", but the
+  app already installed `appProviderRetry` — the 30-second timeout came from a
+  test that never injected it. An adversarial review overturned the premise
+  after the work was done.
 - Either way, fix the test until it fails **for the intended reason**, then
   continue.
 
 This is why a plan's Red expectation names the failure **message**, not just
-`Expected: FAIL` — that alone cannot tell the two cases apart.
+`Expected: FAIL` — that alone cannot tell the cases apart. For the third case it
+also names the **configuration** the failing test runs under, since a message
+that matches the prediction is exactly what an artifact produces.
 
 ## No Placeholders
 
@@ -187,6 +199,8 @@ Grep only sees what *the repo* declares, so it is blind to names that arrive by 
 **6. Test expectations:** For each test the plan writes, ask whether the expected value describes *correct* behavior or merely records *current* behavior. A plan that pins the bug in an assertion turns Red-Green into a ratchet. Watch fixtures where two values coincide by accident — an assertion that passes for the wrong reason reads as coverage and provides none. Negative assertions (`isNot`, `isNotEmpty`, `isNotNull`) slip past this question — current behavior frequently satisfies them already, so the test is green before the implementation exists and the plan's Red never arrives. For each one, state what the code produces *today* and check it against the matcher. Measured: a plan asserted an error message `isNot(contains(<word>))` when the pre-fix message never contained that word.
 
 **7. Repo idiom fit:** Step 4 proves the names exist; this checks the code you wrote *around* them. Every snippet in the plan has to survive this repo's linter and type checker, so compare it against the linter config and against neighboring files that do the same kind of work — annotations the repo does not use, argument values its lint calls redundant, an import order it enforces. Each of these is a convention you can only get right by reading the repo; recalling one from another project puts the defect in the plan, where an implementer will reproduce it verbatim and review will read it as already decided.
+
+**Placement instructions need the same check against a different target.** A snippet that is correct in the file you copied it from can be wrong in the file the task edits, so comparing it to a precedent is not enough — diff the precedent against the *target* on whatever the instruction depends on: the existing import list, whether the handler you are told to wrap already exists, what the surrounding block already does. Measured, both from one plan: "put the `no_retry` import at the top of the block" came from a precedent file that simply had no `logger.dart`, and in both target files the same import sorted later and would have tripped `directives_ordering`; a test step told the implementer to capture `FlutterError.onError` and call `expect` inside it, which in the target's setup died on a binding assertion before reaching the defect.
 
 **8. Verification scope matches the blast radius:** Each task's verify step names the command the implementer runs, and by default that command is scoped to the code the task touches. Where a task widens a shared interface — a new method on an abstract type, a changed signature — that scope is too narrow: implementations live wherever someone wrote one, including fakes in test directories the task never mentions. Scope those tasks' checks to the whole project.
 
