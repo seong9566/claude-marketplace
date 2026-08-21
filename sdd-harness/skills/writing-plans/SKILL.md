@@ -156,8 +156,12 @@ result = run_under_test(client, gateway=fake_gateway_returning_timeout)
 ```
 
 Run: `pytest tests/path/test.py::test_name -v`
-Expected: FAIL with the same message as Step 2. **A pass does not by itself clear
-the premise** — read it against what you predicted. Deterministic failure (a
+Expected: FAIL **for the same reason** as Step 2 — same message *and* same place.
+Adding production wiring changes the execution path, so a matching message is not
+enough: an auth interceptor rejecting the call before it reaches the code under
+test can raise the same top-level timeout. Check the stack or log line, not the
+string. **A pass does not by itself clear the premise** either — read it against
+what you predicted. Deterministic failure (a
 missing policy changes every run) that passes once: the premise is a test
 artifact, stop and report. Failure that can be intermittent (races, retry timing,
 a flaky dependency): re-run, say how many times, and record the rate. Neither
@@ -165,7 +169,8 @@ extreme decides on its own — no failures in a finite run does not prove an
 artifact, and one failure does not prove the defect. What it decides is whether
 this test reproduces the defect **reliably enough to drive a fix**: if you cannot
 raise the rate above noise, stop and report the rate instead of declaring either
-verdict. If it does reproduce, write the rate here — Step 4 has to match it.
+verdict. If it does reproduce, write the rate here — Step 4 reads it and asks for
+a mechanism, since re-running cannot prove a probabilistic defect gone.
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -177,9 +182,12 @@ def function(input):
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/path/test.py::test_name -v`
-Expected: PASS — where Step 2b recorded an intermittent rate, run the same number
-of times with zero failures. One green run answers nothing about a failure that
-showed up in 3 of 20.
+Expected: PASS. Where Step 2b recorded an intermittent rate, **run count alone
+cannot close it** — a 15% failure rate survives twenty clean runs about 4% of the
+time. Say in the plan *why the fix removes that failure mode* (the race window it
+closes, the timeout boundary it moves), and treat re-runs as corroboration of
+that argument rather than as the proof. If you cannot name the mechanism, the
+task is not done, however many greens you collect.
 
 - [ ] **Step 5: Commit**
 
