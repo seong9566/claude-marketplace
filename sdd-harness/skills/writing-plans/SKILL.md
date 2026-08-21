@@ -115,9 +115,12 @@ Config parity: [what the test installs or omits relative to that path — the
   policies, interceptors, and defaults it does *not* inject. Empty means the test
   runs the same wiring production does. For a new path, compare against the
   wiring this plan will install.]
-Gate: if Config parity is non-empty, do not start Step 3. Re-run with that wiring
-  in place and confirm the same failure; if it disappears, stop and report — the
-  premise is a test artifact, not a bug.
+Gate: a non-empty Config parity means this Red is not yet evidence. If that
+  wiring **already exists**, re-run with it in place before Step 3 and confirm
+  the same failure — if it disappears, stop and report: the premise is a test
+  artifact. If **this plan is still building** that wiring, carry the check to
+  Step 4 instead: the finished configuration must produce the same failure
+  before the fix and pass after. Never skip Step 3 waiting for code Step 3 writes.
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -151,11 +154,14 @@ Two gates stand before Step 3, and only the first is about a surprising failure.
    The third case below is reached through this gate.
 
 Gate 2 is about **reproducing behavior that already exists**, so where Step 2
-names a real Production path the baseline is that path's current wiring. Where
-the line says the path is new, the gate still binds — its baseline is simply the
-wiring **this plan will install**. A test that fails under configuration the
-finished route or endpoint will never use sends the implementer after behavior
-nobody asked for, and that lands in the first release, not a later one.
+names a real Production path the baseline is that path's current wiring and the
+check runs before Step 3. Where the line says the path is new, the gate still
+binds — its baseline is the wiring **this plan will install** — but it cannot run
+early, because the wiring is what Step 3 writes. There it moves to Step 4: the
+finished configuration must show the failure before the fix and its absence
+after. A test that only fails under configuration the finished route will never
+use sends the implementer after behavior nobody asked for, and that lands in the
+first release, not a later one.
 
 **Write the gate into the plan, not just here.** Step 2 above carries a `Gate:`
 line for exactly this reason: an implementer receives their task section, not
@@ -233,6 +239,8 @@ Grep only sees what *the repo* declares, so it is blind to names that arrive by 
 **Placement instructions need the same check against a different target.** A snippet that is correct in the file you copied it from can be wrong in the file the task edits, so comparing it to a precedent is not enough — diff the precedent against the *target* on whatever the instruction depends on: the existing import list, whether the handler you are told to wrap already exists, what the surrounding block already does. Measured, both from one plan: "put the `no_retry` import at the top of the block" came from a precedent file that simply had no `logger.dart`, and in both target files the same import sorted later and would have tripped `directives_ordering`; a test step told the implementer to capture `FlutterError.onError` and call `expect` inside it, which in the target's setup died on a binding assertion before reaching the defect.
 
 **8. Verification scope matches the blast radius:** Each task's verify step names the command the implementer runs, and by default that command is scoped to the code the task touches. Where a task widens a shared interface — a new method on an abstract type, a changed signature — that scope is too narrow: implementations live wherever someone wrote one, including fakes in test directories the task never mentions. Scope those tasks' checks to the whole project.
+
+**9. Red grounding — read the wiring you claimed:** Step 2's `Production path` and `Config parity` lines are claims about the repo, and the empty parity line is the one most likely to be wrong — it is what an author writes when they have not looked. Naming a production path does not mean you inspected it. Open the entrypoint that reaches this code and list what it installs (retry policies, interceptors, global defaults, error handlers), then compare that list to what the test sets up. The expensive failure this gate exists to catch comes from a policy the author never knew about, so "no difference" counts only after you have read the entrypoint.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
