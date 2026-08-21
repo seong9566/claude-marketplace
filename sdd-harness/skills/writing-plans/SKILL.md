@@ -123,6 +123,10 @@ Config parity: [every place the test's setup and that path's differ — a policy
   both". A bare "none" reads as verified when it may only mean unexamined.
   When Production path is "N/A — pure unit", write "N/A — pure unit" here too;
   there is no path to compare against and the gate does not apply.]
+Failure mode: [deterministic — same result every run — or intermittent, with the
+  rate and the run count you measured. **Decide this from the failure's nature,
+  not from parity**: a race or a timing-dependent timeout is intermittent even
+  when the test already runs the production wiring. Step 4 reads this line.]
 Gate: runs whenever that line lists a difference — including one you believe is
   harmless. **Close it in the direction it points**, then re-run before Step 3
   and confirm the failure survives:
@@ -169,8 +173,9 @@ extreme decides on its own — no failures in a finite run does not prove an
 artifact, and one failure does not prove the defect. What it decides is whether
 this test reproduces the defect **reliably enough to drive a fix**: if you cannot
 raise the rate above noise, stop and report the rate instead of declaring either
-verdict. If it does reproduce, write the rate here — Step 4 reads it and asks for
-a mechanism, since re-running cannot prove a probabilistic defect gone.
+verdict. If it does reproduce, record the rate in Step 2's Failure mode line —
+that line, not this sub-step, is what Step 4 reads, so an intermittent failure is
+handled the same way when parity found nothing and this sub-step never ran.
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -182,12 +187,13 @@ def function(input):
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/path/test.py::test_name -v`
-Expected: PASS. Where Step 2b recorded an intermittent rate, **run count alone
-cannot close it** — a 15% failure rate survives twenty clean runs about 4% of the
-time. Say in the plan *why the fix removes that failure mode* (the race window it
-closes, the timeout boundary it moves), and treat re-runs as corroboration of
-that argument rather than as the proof. If you cannot name the mechanism, the
-task is not done, however many greens you collect.
+Expected: PASS. Where Step 2's **Failure mode** says intermittent — whether or
+not parity found a difference, since a race under production-equivalent wiring is
+still a race — **run count alone cannot close it**: a 15% failure rate survives
+twenty clean runs about 4% of the time. Say in the plan *why the fix removes that
+failure mode* (the race window it closes, the timeout boundary it moves), and
+treat re-runs as corroboration of that argument rather than as the proof. If you
+cannot name the mechanism, the task is not done, however many greens you collect.
 
 - [ ] **Step 5: Commit**
 
