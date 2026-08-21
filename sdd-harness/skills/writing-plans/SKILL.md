@@ -160,9 +160,12 @@ Expected: FAIL with the same message as Step 2. **A pass does not by itself clea
 the premise** — read it against what you predicted. Deterministic failure (a
 missing policy changes every run) that passes once: the premise is a test
 artifact, stop and report. Failure that can be intermittent (races, retry timing,
-a flaky dependency): re-run N times and record the rate — 0/N is an artifact,
-anything else is a real but probabilistic defect. Write which case this is here,
-so Step 4 does not read one green run as proof either.
+a flaky dependency): re-run, say how many times, and record the rate. Neither
+extreme decides on its own — no failures in a finite run does not prove an
+artifact, and one failure does not prove the defect. What it decides is whether
+this test reproduces the defect **reliably enough to drive a fix**: if you cannot
+raise the rate above noise, stop and report the rate instead of declaring either
+verdict. If it does reproduce, write the rate here — Step 4 has to match it.
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -174,7 +177,9 @@ def function(input):
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/path/test.py::test_name -v`
-Expected: PASS
+Expected: PASS — where Step 2b recorded an intermittent rate, run the same number
+of times with zero failures. One green run answers nothing about a failure that
+showed up in 3 of 20.
 
 - [ ] **Step 5: Commit**
 
