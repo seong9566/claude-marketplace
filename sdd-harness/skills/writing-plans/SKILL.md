@@ -106,8 +106,82 @@ def test_specific_behavior():
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `pytest tests/path/test.py::test_name -v`
+Run: `pytest tests/path/test.py::test_name -v` — where Failure mode (expected)
+  below says intermittent, run it repeatedly instead of once and name the count.
 Expected: FAIL with "function not defined"
+Production path: [where this failure occurs when the app runs — the entrypoint,
+  config, or policy that reaches the same code. If the path does not exist yet,
+  name who builds it and where: "new — Task 3 registers it in `router.dart`",
+  not a bare "new". The implementer gets this line and has to find the baseline.
+  "N/A — pure unit" when there is no such path at all.]
+Config parity: [every place the test's setup and that path's differ — a policy
+  or interceptor the path installs and the test omits, or a state the test
+  forces. **Record differences; do not pre-judge which ones matter.** Whether a
+  missing retry policy changes this failure is exactly what the gate measures,
+  so deciding it by reading is deciding the thing you were going to verify. When
+  you find no difference, say so **and name what you checked**: "none — read
+  `main.dart` ProviderScope: retry override + dio interceptors, test installs
+  both". A bare "none" reads as verified when it may only mean unexamined.
+  When Production path is "N/A — pure unit", write "N/A — pure unit" here too;
+  there is no path to compare against and the gate does not apply.]
+Failure mode (expected): [your prediction at plan time — deterministic (same
+  result every run) or intermittent, and why. **Judge the failure's nature, not
+  parity**: a race or a timing-dependent timeout is intermittent even when the
+  test already runs the production wiring.]
+Failure mode (observed): [left blank by the plan; the implementer fills it in
+  after running Step 2 — "deterministic", or the rate and run count. Where it
+  contradicts the prediction, the observation wins and Step 4 follows it.]
+Gate: runs whenever **Config parity** lists a difference — including one you
+  believe is harmless. **Close it in the direction it points**, then re-run before Step 3
+  and confirm the failure survives:
+  · the test *omits* wiring the app installs → put that wiring back, keeping
+    doubles that stand in for external systems;
+  · the test *forces* a state the path cannot reach → change the double to
+    return something the real dependency can actually return. Restoring app
+    wiring while keeping an impossible response re-runs the same artifact.
+  If the failure disappears, say whether you expected it to be deterministic. If
+  so, the premise is a test artifact — stop and report. If the failure could be
+  intermittent, one green run proves nothing either: re-run and record the rate
+  before calling it. One run turns "this fake is equivalent" from belief into
+  evidence only where the failure was supposed to be certain.
+  If the wiring cannot exist before the fix, the replacement check
+  must still **observe the failure before the fix under wiring that behaves like
+  the finished path** — a static reading or a post-fix pass does not qualify. The
+  one case with nothing to observe is a config-only task, where installing the
+  wiring *is* the requested behavior — say so explicitly.
+
+When the gate applies, write it as its own sub-step with the **actual setup
+code**, the same way Step 1 carries the test. Leaving the implementer to
+improvise how production wiring is reproduced is the placeholder this skill
+forbids everywhere else. Omit this sub-step entirely when parity reports nothing.
+
+- [ ] **Step 2b: Re-run under production wiring** *(only when parity lists a difference)*
+
+```python
+# put back what the app installs; keep the double for the external system
+client = build_client(retry=production_retry, interceptors=[auth_interceptor])
+result = run_under_test(client, gateway=fake_gateway_returning_timeout)
+```
+
+Run: `pytest tests/path/test.py::test_name -v`
+Expected: FAIL **for the same reason** as Step 2 — same message *and* same place.
+Adding production wiring changes the execution path, so a matching message is not
+enough: an auth interceptor rejecting the call before it reaches the code under
+test can raise the same top-level timeout. Check the stack or log line, not the
+string. **A pass does not by itself clear the premise** either — read it against
+what you predicted. Deterministic failure (a
+missing policy changes every run) that passes once: the premise is a test
+artifact, stop and report. Failure that can be intermittent (races, retry timing,
+a flaky dependency): re-run, say how many times, and record the rate. Neither
+extreme decides on its own — no failures in a finite run does not prove an
+artifact, and one failure does not prove the defect. **This skill does not set the
+bar** for how often is often enough: run counts and acceptable rates are
+domain-specific, and a number chosen here would be arbitrary. What the plan owes
+is the record — put the rate, the run count, and the call you made in Step 2's
+**Failure mode (observed)** line, so the decision is reviewable instead of
+implicit. That line, not this sub-step, is what Step 4 reads, so an intermittent
+failure is handled the same way when parity found nothing and this sub-step never
+ran.
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -119,7 +193,13 @@ def function(input):
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/path/test.py::test_name -v`
-Expected: PASS
+Expected: PASS. Where Step 2's **Failure mode (observed)** says intermittent — whether or
+not parity found a difference, since a race under production-equivalent wiring is
+still a race — **run count alone cannot close it**: a 15% failure rate survives
+twenty clean runs about 4% of the time. Say in the plan *why the fix removes that
+failure mode* (the race window it closes, the timeout boundary it moves), and
+treat re-runs as corroboration of that argument rather than as the proof. If you
+cannot name the mechanism, the task is not done, however many greens you collect.
 
 - [ ] **Step 5: Commit**
 
@@ -131,8 +211,42 @@ git commit -m "feat: add specific feature"
 
 ## Red Verification — When the Failure Is Wrong, Suspect the Test
 
-If Step 2 does not fail **for the reason you predicted**, do not proceed to
-Step 3. The thing to doubt is the test you just wrote, not the implementation.
+Two gates stand before Step 3, and only the first is about a surprising failure.
+
+1. If Step 2 does not fail **for the reason you predicted**, stop. The thing to
+   doubt is the test you just wrote, not the implementation. One exception: where
+   Step 2 predicted an *intermittent* failure, a single green run is not a
+   not-reproducing result — a defect that shows up 15% of the time passes the
+   first run 85% of the time. Re-run to the count Step 2 names, record the rate
+   as the observation, and apply this gate to that rate.
+2. If it *did* fail exactly as predicted, read Step 2's **Config parity** line
+   before proceeding. A failure that matches the prediction is what an artifact
+   looks like, so a clean Red is not by itself evidence that the bug is real.
+   The gate trips on any difference that line lists, including ones you expect
+   to be harmless — whether a difference matters is what the re-run decides, not
+   the author. A line that names what was checked and found nothing passes. The
+   third case below is reached through this gate.
+
+The baseline depends on the path. Where Step 2 names one that already exists, it
+is that path's current wiring and the check runs before Step 3 — usually by
+re-running with the missing policy installed. Where the path is new, it is the
+wiring **this plan will install**, and when that wiring can be built before the
+implementation, building it first and re-running is the same check one step
+later. When it cannot — a registration that needs handlers Step 3 writes — whatever
+replaces it must still watch the failure happen **before** the fix, under wiring
+that behaves like the finished path; reading the code or seeing Step 4 pass
+leaves the false Red exactly where it was. **Do not defer the failing run to
+Step 4**: Step 4 runs the passing case with the fix already in, so it never
+executes. Only a config-only task, where installing the wiring is itself the
+requested behavior, has nothing to observe. A test that only fails under configuration the finished route will
+never use sends the implementer after behavior nobody asked for, and that lands
+in the first release, not a later one.
+
+**Write the gate into the plan, not just here.** Step 2 above carries a `Gate:`
+line, and Step 2b carries the run itself, for exactly this reason: an implementer
+receives their task section, not this skill, so a rule that lives only in the
+authoring skill never reaches the person who runs the test — and a rule that
+arrives without the setup code is a placeholder, which §No Placeholders forbids.
 
 - **It passed with no implementation** → that test verifies nothing. Common
   causes: an async mock that returns a value immediately instead of exercising
@@ -141,11 +255,25 @@ Step 3. The thing to doubt is the test you just wrote, not the implementation.
   before and after the implementation exists, so nothing ever flags it.
 - **It failed for the wrong reason** → dying on a typo, an import error, or a
   missing fixture is not Red.
-- Either way, fix the test until it fails **for the intended reason**, then
-  continue.
+- **It failed for the predicted reason, but only because of how the test is
+  wired** → that is an artifact, not a reproduction. A test that omits a policy
+  the app installs — a retry override, an interceptor, a default the production
+  entrypoint sets — reproduces the harness, not the bug. Name the production
+  path that produces the same failure, then A/B it: keep the app's real
+  configuration, leave the fix out, and confirm the failure still appears.
+  Measured: a plan was written around "the query screen spins forever", but the
+  app already installed `appProviderRetry` — the 30-second timeout came from a
+  test that never injected it. An adversarial review overturned the premise
+  after the work was done.
+In the first two cases, fix the test until it fails **for the intended reason**,
+then continue. In the third, give the test the app's real wiring and confirm the
+failure survives — or **discard the premise**, because the bug may not exist.
 
 This is why a plan's Red expectation names the failure **message**, not just
-`Expected: FAIL` — that alone cannot tell the two cases apart.
+`Expected: FAIL` — that alone cannot tell the first two cases apart — and why
+Step 2 carries **Production path** and **Config parity** lines, which are what
+gate 2 reads. A message matching the prediction is exactly what an artifact
+produces, so the prediction alone can never catch the third case.
 
 ## No Placeholders
 
@@ -188,7 +316,11 @@ Grep only sees what *the repo* declares, so it is blind to names that arrive by 
 
 **7. Repo idiom fit:** Step 4 proves the names exist; this checks the code you wrote *around* them. Every snippet in the plan has to survive this repo's linter and type checker, so compare it against the linter config and against neighboring files that do the same kind of work — annotations the repo does not use, argument values its lint calls redundant, an import order it enforces. Each of these is a convention you can only get right by reading the repo; recalling one from another project puts the defect in the plan, where an implementer will reproduce it verbatim and review will read it as already decided.
 
+**Placement instructions need the same check against a different target.** A snippet that is correct in the file you copied it from can be wrong in the file the task edits, so comparing it to a precedent is not enough — diff the precedent against the *target* on whatever the instruction depends on: the existing import list, whether the handler you are told to wrap already exists, what the surrounding block already does. Measured, both from one plan: "put the `no_retry` import at the top of the block" came from a precedent file that simply had no `logger.dart`, and in both target files the same import sorted later and would have tripped `directives_ordering`; a test step told the implementer to capture `FlutterError.onError` and call `expect` inside it, which in the target's setup died on a binding assertion before reaching the defect.
+
 **8. Verification scope matches the blast radius:** Each task's verify step names the command the implementer runs, and by default that command is scoped to the code the task touches. Where a task widens a shared interface — a new method on an abstract type, a changed signature — that scope is too narrow: implementations live wherever someone wrote one, including fakes in test directories the task never mentions. Scope those tasks' checks to the whole project.
+
+**9. Red grounding — read the wiring you claimed:** Step 2's `Production path` and `Config parity` lines are claims about the repo, and the empty parity line is the one most likely to be wrong — it is what an author writes when they have not looked. Naming a production path does not mean you inspected it. Open the entrypoint that reaches this code and list what it installs (retry policies, interceptors, global defaults, error handlers), then compare that list to what the test sets up — **in both directions**, since a state the test forces and production can never reach produces the same false Red as a policy the test omits. Write down what differs without ruling any of it out; the re-run decides which differences matter, and an author who settles that by reading has skipped the check. The expensive failure this gate exists to catch comes from a policy the author never knew about, so "no difference" counts only after you have read the entrypoint — and the parity line has to **name what you read**, because the implementer receives that line and not this check.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
