@@ -122,11 +122,16 @@ Config parity: [every place the test's setup and that path's differ — a policy
   `main.dart` ProviderScope: retry override + dio interceptors, test installs
   both". A bare "none" reads as verified when it may only mean unexamined.]
 Gate: runs whenever that line lists a difference — including one you believe is
-  harmless. Re-run before Step 3 with the path's **own** wiring restored (keep
-  doubles standing in for external systems; put back what the app installs), and
-  confirm the failure survives; if it disappears, stop and report — the premise
-  is a test artifact. One run is what turns "this fake is equivalent" from belief
-  into evidence. If the wiring cannot exist before the fix, the replacement check
+  harmless. **Close it in the direction it points**, then re-run before Step 3
+  and confirm the failure survives:
+  · the test *omits* wiring the app installs → put that wiring back, keeping
+    doubles that stand in for external systems;
+  · the test *forces* a state the path cannot reach → change the double to
+    return something the real dependency can actually return. Restoring app
+    wiring while keeping an impossible response re-runs the same artifact.
+  If the failure disappears, stop and report — the premise is a test artifact.
+  One run is what turns "this fake is equivalent" from belief into evidence.
+  If the wiring cannot exist before the fix, the replacement check
   must still **observe the failure before the fix under wiring that behaves like
   the finished path** — a static reading or a post-fix pass does not qualify. The
   one case with nothing to observe is a config-only task, where installing the
