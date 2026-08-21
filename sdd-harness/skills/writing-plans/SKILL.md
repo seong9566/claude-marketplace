@@ -131,8 +131,11 @@ Gate: runs whenever that line lists a difference — including one you believe i
   · the test *forces* a state the path cannot reach → change the double to
     return something the real dependency can actually return. Restoring app
     wiring while keeping an impossible response re-runs the same artifact.
-  If the failure disappears, stop and report — the premise is a test artifact.
-  One run is what turns "this fake is equivalent" from belief into evidence.
+  If the failure disappears, say whether you expected it to be deterministic. If
+  so, the premise is a test artifact — stop and report. If the failure could be
+  intermittent, one green run proves nothing either: re-run and record the rate
+  before calling it. One run turns "this fake is equivalent" from belief into
+  evidence only where the failure was supposed to be certain.
   If the wiring cannot exist before the fix, the replacement check
   must still **observe the failure before the fix under wiring that behaves like
   the finished path** — a static reading or a post-fix pass does not qualify. The
@@ -153,8 +156,13 @@ result = run_under_test(client, gateway=fake_gateway_returning_timeout)
 ```
 
 Run: `pytest tests/path/test.py::test_name -v`
-Expected: FAIL with the same message as Step 2 — if it passes, stop and report;
-the premise is a test artifact.
+Expected: FAIL with the same message as Step 2. **A pass does not by itself clear
+the premise** — read it against what you predicted. Deterministic failure (a
+missing policy changes every run) that passes once: the premise is a test
+artifact, stop and report. Failure that can be intermittent (races, retry timing,
+a flaky dependency): re-run N times and record the rate — 0/N is an artifact,
+anything else is a real but probabilistic defect. Write which case this is here,
+so Step 4 does not read one green run as proof either.
 
 - [ ] **Step 3: Write minimal implementation**
 
