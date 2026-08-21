@@ -120,7 +120,9 @@ Config parity: [every place the test's setup and that path's differ — a policy
   so deciding it by reading is deciding the thing you were going to verify. When
   you find no difference, say so **and name what you checked**: "none — read
   `main.dart` ProviderScope: retry override + dio interceptors, test installs
-  both". A bare "none" reads as verified when it may only mean unexamined.]
+  both". A bare "none" reads as verified when it may only mean unexamined.
+  When Production path is "N/A — pure unit", write "N/A — pure unit" here too;
+  there is no path to compare against and the gate does not apply.]
 Gate: runs whenever that line lists a difference — including one you believe is
   harmless. **Close it in the direction it points**, then re-run before Step 3
   and confirm the failure survives:
@@ -136,6 +138,23 @@ Gate: runs whenever that line lists a difference — including one you believe i
   the finished path** — a static reading or a post-fix pass does not qualify. The
   one case with nothing to observe is a config-only task, where installing the
   wiring *is* the requested behavior — say so explicitly.
+
+When the gate applies, write it as its own sub-step with the **actual setup
+code**, the same way Step 1 carries the test. Leaving the implementer to
+improvise how production wiring is reproduced is the placeholder this skill
+forbids everywhere else. Omit this sub-step entirely when parity reports nothing.
+
+- [ ] **Step 2b: Re-run under production wiring** *(only when parity lists a difference)*
+
+```python
+# put back what the app installs; keep the double for the external system
+client = build_client(retry=production_retry, interceptors=[auth_interceptor])
+result = run_under_test(client, gateway=fake_gateway_returning_timeout)
+```
+
+Run: `pytest tests/path/test.py::test_name -v`
+Expected: FAIL with the same message as Step 2 — if it passes, stop and report;
+the premise is a test artifact.
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -187,9 +206,10 @@ never use sends the implementer after behavior nobody asked for, and that lands
 in the first release, not a later one.
 
 **Write the gate into the plan, not just here.** Step 2 above carries a `Gate:`
-line for exactly this reason: an implementer receives their task section, not
-this skill, so a rule that lives only in the authoring skill never reaches the
-person who runs the test.
+line, and Step 2b carries the run itself, for exactly this reason: an implementer
+receives their task section, not this skill, so a rule that lives only in the
+authoring skill never reaches the person who runs the test — and a rule that
+arrives without the setup code is a placeholder, which §No Placeholders forbids.
 
 - **It passed with no implementation** → that test verifies nothing. Common
   causes: an async mock that returns a value immediately instead of exercising
