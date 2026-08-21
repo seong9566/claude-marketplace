@@ -109,7 +109,8 @@ def test_specific_behavior():
 Run: `pytest tests/path/test.py::test_name -v`
 Expected: FAIL with "function not defined"
 Production path: [where this failure occurs when the app runs — the entrypoint,
-  config, or policy that reaches the same code. "N/A — pure unit" if there is none.]
+  config, or policy that reaches the same code. Write "new — this plan builds it"
+  when the path does not exist yet, or "N/A — pure unit" when there is none.]
 Config parity: [what the test installs or omits relative to that path — the
   policies, interceptors, and defaults it does *not* inject. Empty means the test
   runs the same wiring production does.]
@@ -143,7 +144,13 @@ Two gates stand before Step 3, and only the first is about a surprising failure.
 2. If it *did* fail exactly as predicted, check Step 2's **Config parity** line
    before proceeding. A failure that matches the prediction is what an artifact
    looks like, so a clean Red is not by itself evidence that the bug is real.
-   This gate runs on every task — the third case below is reached through it.
+   The third case below is reached through this gate.
+
+Gate 2 is about **reproducing behavior that already exists**, so it binds where
+Step 2 names a real Production path. Where that line says the path is new, there
+is nothing to reproduce and the gate is satisfied — but still write the parity
+line, because a policy the new path will install and the test omits is the same
+trap one release later.
 
 - **It passed with no implementation** → that test verifies nothing. Common
   causes: an async mock that returns a value immediately instead of exercising
