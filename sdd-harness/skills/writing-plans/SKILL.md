@@ -174,12 +174,14 @@ missing policy changes every run) that passes once: the premise is a test
 artifact, stop and report. Failure that can be intermittent (races, retry timing,
 a flaky dependency): re-run, say how many times, and record the rate. Neither
 extreme decides on its own — no failures in a finite run does not prove an
-artifact, and one failure does not prove the defect. What it decides is whether
-this test reproduces the defect **reliably enough to drive a fix**: if you cannot
-raise the rate above noise, stop and report the rate instead of declaring either
-verdict. If it does reproduce, record the rate in Step 2's **Failure mode (observed)** line —
-that line, not this sub-step, is what Step 4 reads, so an intermittent failure is
-handled the same way when parity found nothing and this sub-step never ran.
+artifact, and one failure does not prove the defect. **This skill does not set the
+bar** for how often is often enough: run counts and acceptable rates are
+domain-specific, and a number chosen here would be arbitrary. What the plan owes
+is the record — put the rate, the run count, and the call you made in Step 2's
+**Failure mode (observed)** line, so the decision is reviewable instead of
+implicit. That line, not this sub-step, is what Step 4 reads, so an intermittent
+failure is handled the same way when parity found nothing and this sub-step never
+ran.
 
 - [ ] **Step 3: Write minimal implementation**
 
