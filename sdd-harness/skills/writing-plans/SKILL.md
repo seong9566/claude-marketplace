@@ -111,22 +111,25 @@ Expected: FAIL with "function not defined"
 Production path: [where this failure occurs when the app runs — the entrypoint,
   config, or policy that reaches the same code. Write "new — this plan builds it"
   when the path does not exist yet, or "N/A — pure unit" when there is none.]
-Config parity: [the **difference** between what the test wires up and what that
-  path installs — **both directions**: policies, interceptors, and defaults the
-  test omits, *and* overrides, fakes, or handlers the test adds that production
-  never installs. For a new path, compare against the wiring this plan will
-  install. When there is no difference, say so **and name what you checked**:
-  "none — read `main.dart` ProviderScope: retry override + dio interceptors,
-  test installs both". A bare "none" reads as verified when it may only mean
-  unexamined, and the implementer gets this line rather than your reasoning.]
-Gate: only when that line reports a difference. Then name **where the difference
-  closes and what you expect there** — usually "re-run under the production
-  wiring before Step 3; the failure must survive, and if it disappears the
-  premise is a test artifact — stop and report". If it cannot close before the
-  fix exists, say so and name the check that replaces it: a config-only task is
-  *supposed* to pass once its wiring lands, so there the parity note is a record,
-  not a gate. What the plan owes the implementer is one line saying how the
-  artifact was ruled out — not a fixed procedure that has to fit every task.
+Config parity: [where the test's conditions and that path's **diverge in a way
+  that changes the outcome** — a policy or interceptor the path installs and the
+  test omits, or a state the test forces that the path can never produce. Judge
+  behavior, not component identity: **a test double is not automatically a
+  divergence.** A fake yielding a timeout the real gateway also yields is
+  equivalent; a fake yielding a response the server never returns is not. For a
+  new path, compare against the wiring this plan will install. When nothing
+  diverges, say so **and name what you checked**: "none — read `main.dart`
+  ProviderScope: retry override + dio interceptors, test installs both". A bare
+  "none" reads as verified when it may only mean unexamined, and the implementer
+  gets this line rather than your reasoning.]
+Gate: only when that line reports a divergence. Then name **where it closes and
+  what you expect there** — usually "re-run under the production wiring before
+  Step 3; the failure must survive, and if it disappears the premise is a test
+  artifact — stop and report". If it cannot close before the fix exists, the
+  replacement check must still **observe the failure before the fix, under wiring
+  equivalent to the finished path**; a static reading or a post-fix pass does not
+  qualify. The one case with nothing to observe is a config-only task, where
+  installing the wiring *is* the requested behavior — say so explicitly.
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -166,11 +169,13 @@ is that path's current wiring and the check runs before Step 3 — usually by
 re-running with the missing policy installed. Where the path is new, it is the
 wiring **this plan will install**, and when that wiring can be built before the
 implementation, building it first and re-running is the same check one step
-later. When it cannot — a config-only task, a registration that needs handlers
-Step 3 writes — the parity line is a record rather than a gate, and the plan says
-so along with whatever check takes its place. **Do not defer the failing run to
+later. When it cannot — a registration that needs handlers Step 3 writes — whatever
+replaces it must still watch the failure happen **before** the fix, under wiring
+that behaves like the finished path; reading the code or seeing Step 4 pass
+leaves the false Red exactly where it was. **Do not defer the failing run to
 Step 4**: Step 4 runs the passing case with the fix already in, so it never
-executes. A test that only fails under configuration the finished route will
+executes. Only a config-only task, where installing the wiring is itself the
+requested behavior, has nothing to observe. A test that only fails under configuration the finished route will
 never use sends the implementer after behavior nobody asked for, and that lands
 in the first release, not a later one.
 
@@ -251,7 +256,7 @@ Grep only sees what *the repo* declares, so it is blind to names that arrive by 
 
 **8. Verification scope matches the blast radius:** Each task's verify step names the command the implementer runs, and by default that command is scoped to the code the task touches. Where a task widens a shared interface — a new method on an abstract type, a changed signature — that scope is too narrow: implementations live wherever someone wrote one, including fakes in test directories the task never mentions. Scope those tasks' checks to the whole project.
 
-**9. Red grounding — read the wiring you claimed:** Step 2's `Production path` and `Config parity` lines are claims about the repo, and the empty parity line is the one most likely to be wrong — it is what an author writes when they have not looked. Naming a production path does not mean you inspected it. Open the entrypoint that reaches this code and list what it installs (retry policies, interceptors, global defaults, error handlers), then compare that list to what the test sets up — **in both directions**, since a fake or override the test adds and production never installs produces the same false Red as a policy the test omits. The expensive failure this gate exists to catch comes from a policy the author never knew about, so "no difference" counts only after you have read the entrypoint — and the parity line has to **name what you read**, because the implementer receives that line and not this check.
+**9. Red grounding — read the wiring you claimed:** Step 2's `Production path` and `Config parity` lines are claims about the repo, and the empty parity line is the one most likely to be wrong — it is what an author writes when they have not looked. Naming a production path does not mean you inspected it. Open the entrypoint that reaches this code and list what it installs (retry policies, interceptors, global defaults, error handlers), then compare that list to what the test sets up — **in both directions**, since a state the test forces and production can never reach produces the same false Red as a policy the test omits. Compare outcomes, not component names: a double standing in for a real dependency is fine as long as what it produces is something the real one produces too. The expensive failure this gate exists to catch comes from a policy the author never knew about, so "no difference" counts only after you have read the entrypoint — and the parity line has to **name what you read**, because the implementer receives that line and not this check.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
