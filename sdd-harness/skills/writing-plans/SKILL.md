@@ -123,12 +123,15 @@ Config parity: [every place the test's setup and that path's differ — a policy
   both". A bare "none" reads as verified when it may only mean unexamined.
   When Production path is "N/A — pure unit", write "N/A — pure unit" here too;
   there is no path to compare against and the gate does not apply.]
-Failure mode: [deterministic — same result every run — or intermittent, with the
-  rate and the run count you measured. **Decide this from the failure's nature,
-  not from parity**: a race or a timing-dependent timeout is intermittent even
-  when the test already runs the production wiring. Step 4 reads this line.]
-Gate: runs whenever that line lists a difference — including one you believe is
-  harmless. **Close it in the direction it points**, then re-run before Step 3
+Failure mode (expected): [your prediction at plan time — deterministic (same
+  result every run) or intermittent, and why. **Judge the failure's nature, not
+  parity**: a race or a timing-dependent timeout is intermittent even when the
+  test already runs the production wiring.]
+Failure mode (observed): [left blank by the plan; the implementer fills it in
+  after running Step 2 — "deterministic", or the rate and run count. Where it
+  contradicts the prediction, the observation wins and Step 4 follows it.]
+Gate: runs whenever **Config parity** lists a difference — including one you
+  believe is harmless. **Close it in the direction it points**, then re-run before Step 3
   and confirm the failure survives:
   · the test *omits* wiring the app installs → put that wiring back, keeping
     doubles that stand in for external systems;
@@ -173,7 +176,7 @@ extreme decides on its own — no failures in a finite run does not prove an
 artifact, and one failure does not prove the defect. What it decides is whether
 this test reproduces the defect **reliably enough to drive a fix**: if you cannot
 raise the rate above noise, stop and report the rate instead of declaring either
-verdict. If it does reproduce, record the rate in Step 2's Failure mode line —
+verdict. If it does reproduce, record the rate in Step 2's **Failure mode (observed)** line —
 that line, not this sub-step, is what Step 4 reads, so an intermittent failure is
 handled the same way when parity found nothing and this sub-step never ran.
 
@@ -187,7 +190,7 @@ def function(input):
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/path/test.py::test_name -v`
-Expected: PASS. Where Step 2's **Failure mode** says intermittent — whether or
+Expected: PASS. Where Step 2's **Failure mode (observed)** says intermittent — whether or
 not parity found a difference, since a race under production-equivalent wiring is
 still a race — **run count alone cannot close it**: a 15% failure rate survives
 twenty clean runs about 4% of the time. Say in the plan *why the fix removes that
