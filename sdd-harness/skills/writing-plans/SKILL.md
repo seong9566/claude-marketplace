@@ -109,27 +109,28 @@ def test_specific_behavior():
 Run: `pytest tests/path/test.py::test_name -v`
 Expected: FAIL with "function not defined"
 Production path: [where this failure occurs when the app runs — the entrypoint,
-  config, or policy that reaches the same code. Write "new — this plan builds it"
-  when the path does not exist yet, or "N/A — pure unit" when there is none.]
-Config parity: [where the test's conditions and that path's **diverge in a way
-  that changes the outcome** — a policy or interceptor the path installs and the
-  test omits, or a state the test forces that the path can never produce. Judge
-  behavior, not component identity: **a test double is not automatically a
-  divergence.** A fake yielding a timeout the real gateway also yields is
-  equivalent; a fake yielding a response the server never returns is not. For a
-  new path, compare against the wiring this plan will install. When nothing
-  diverges, say so **and name what you checked**: "none — read `main.dart`
-  ProviderScope: retry override + dio interceptors, test installs both". A bare
-  "none" reads as verified when it may only mean unexamined, and the implementer
-  gets this line rather than your reasoning.]
-Gate: only when that line reports a divergence. Then name **where it closes and
-  what you expect there** — usually "re-run under the production wiring before
-  Step 3; the failure must survive, and if it disappears the premise is a test
-  artifact — stop and report". If it cannot close before the fix exists, the
-  replacement check must still **observe the failure before the fix, under wiring
-  equivalent to the finished path**; a static reading or a post-fix pass does not
-  qualify. The one case with nothing to observe is a config-only task, where
-  installing the wiring *is* the requested behavior — say so explicitly.
+  config, or policy that reaches the same code. If the path does not exist yet,
+  name who builds it and where: "new — Task 3 registers it in `router.dart`",
+  not a bare "new". The implementer gets this line and has to find the baseline.
+  "N/A — pure unit" when there is no such path at all.]
+Config parity: [every place the test's setup and that path's differ — a policy
+  or interceptor the path installs and the test omits, or a state the test
+  forces. **Record differences; do not pre-judge which ones matter.** Whether a
+  missing retry policy changes this failure is exactly what the gate measures,
+  so deciding it by reading is deciding the thing you were going to verify. When
+  you find no difference, say so **and name what you checked**: "none — read
+  `main.dart` ProviderScope: retry override + dio interceptors, test installs
+  both". A bare "none" reads as verified when it may only mean unexamined.]
+Gate: runs whenever that line lists a difference — including one you believe is
+  harmless. Re-run before Step 3 with the path's **own** wiring restored (keep
+  doubles standing in for external systems; put back what the app installs), and
+  confirm the failure survives; if it disappears, stop and report — the premise
+  is a test artifact. One run is what turns "this fake is equivalent" from belief
+  into evidence. If the wiring cannot exist before the fix, the replacement check
+  must still **observe the failure before the fix under wiring that behaves like
+  the finished path** — a static reading or a post-fix pass does not qualify. The
+  one case with nothing to observe is a config-only task, where installing the
+  wiring *is* the requested behavior — say so explicitly.
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -160,9 +161,10 @@ Two gates stand before Step 3, and only the first is about a surprising failure.
 2. If it *did* fail exactly as predicted, read Step 2's **Config parity** line
    before proceeding. A failure that matches the prediction is what an artifact
    looks like, so a clean Red is not by itself evidence that the bug is real.
-   The gate trips only when that line reports a difference; a line that names
-   what was checked and found no difference passes. The third case below is
-   reached through this gate.
+   The gate trips on any difference that line lists, including ones you expect
+   to be harmless — whether a difference matters is what the re-run decides, not
+   the author. A line that names what was checked and found nothing passes. The
+   third case below is reached through this gate.
 
 The baseline depends on the path. Where Step 2 names one that already exists, it
 is that path's current wiring and the check runs before Step 3 — usually by
@@ -256,7 +258,7 @@ Grep only sees what *the repo* declares, so it is blind to names that arrive by 
 
 **8. Verification scope matches the blast radius:** Each task's verify step names the command the implementer runs, and by default that command is scoped to the code the task touches. Where a task widens a shared interface — a new method on an abstract type, a changed signature — that scope is too narrow: implementations live wherever someone wrote one, including fakes in test directories the task never mentions. Scope those tasks' checks to the whole project.
 
-**9. Red grounding — read the wiring you claimed:** Step 2's `Production path` and `Config parity` lines are claims about the repo, and the empty parity line is the one most likely to be wrong — it is what an author writes when they have not looked. Naming a production path does not mean you inspected it. Open the entrypoint that reaches this code and list what it installs (retry policies, interceptors, global defaults, error handlers), then compare that list to what the test sets up — **in both directions**, since a state the test forces and production can never reach produces the same false Red as a policy the test omits. Compare outcomes, not component names: a double standing in for a real dependency is fine as long as what it produces is something the real one produces too. The expensive failure this gate exists to catch comes from a policy the author never knew about, so "no difference" counts only after you have read the entrypoint — and the parity line has to **name what you read**, because the implementer receives that line and not this check.
+**9. Red grounding — read the wiring you claimed:** Step 2's `Production path` and `Config parity` lines are claims about the repo, and the empty parity line is the one most likely to be wrong — it is what an author writes when they have not looked. Naming a production path does not mean you inspected it. Open the entrypoint that reaches this code and list what it installs (retry policies, interceptors, global defaults, error handlers), then compare that list to what the test sets up — **in both directions**, since a state the test forces and production can never reach produces the same false Red as a policy the test omits. Write down what differs without ruling any of it out; the re-run decides which differences matter, and an author who settles that by reading has skipped the check. The expensive failure this gate exists to catch comes from a policy the author never knew about, so "no difference" counts only after you have read the entrypoint — and the parity line has to **name what you read**, because the implementer receives that line and not this check.
 
 If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
 
