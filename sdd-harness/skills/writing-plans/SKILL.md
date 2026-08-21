@@ -106,7 +106,8 @@ def test_specific_behavior():
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `pytest tests/path/test.py::test_name -v`
+Run: `pytest tests/path/test.py::test_name -v` — where Failure mode (expected)
+  below says intermittent, run it repeatedly instead of once and name the count.
 Expected: FAIL with "function not defined"
 Production path: [where this failure occurs when the app runs — the entrypoint,
   config, or policy that reaches the same code. If the path does not exist yet,
@@ -211,7 +212,11 @@ git commit -m "feat: add specific feature"
 Two gates stand before Step 3, and only the first is about a surprising failure.
 
 1. If Step 2 does not fail **for the reason you predicted**, stop. The thing to
-   doubt is the test you just wrote, not the implementation.
+   doubt is the test you just wrote, not the implementation. One exception: where
+   Step 2 predicted an *intermittent* failure, a single green run is not a
+   not-reproducing result — a defect that shows up 15% of the time passes the
+   first run 85% of the time. Re-run to the count Step 2 names, record the rate
+   as the observation, and apply this gate to that rate.
 2. If it *did* fail exactly as predicted, read Step 2's **Config parity** line
    before proceeding. A failure that matches the prediction is what an artifact
    looks like, so a clean Red is not by itself evidence that the bug is real.
