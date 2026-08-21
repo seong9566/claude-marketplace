@@ -111,19 +111,21 @@ Expected: FAIL with "function not defined"
 Production path: [where this failure occurs when the app runs — the entrypoint,
   config, or policy that reaches the same code. Write "new — this plan builds it"
   when the path does not exist yet, or "N/A — pure unit" when there is none.]
-Config parity: [what the test installs or omits relative to that path — the
-  policies, interceptors, and defaults it does *not* inject. For a new path,
-  compare against the wiring this plan will install. **Empty is a claim, not a
-  default** — back it with what you read: "checked `main.dart` ProviderScope:
-  retry override + dio interceptors; the test installs both". The implementer
-  gets this line, not your reasoning, so an unsupported "none" reads as verified.]
-Gate: a non-empty Config parity means this Red is not yet evidence. If that
-  wiring **already exists**, re-run with it in place before Step 3 and confirm
-  the same failure — if it disappears, stop and report: the premise is a test
-  artifact. If **this plan is still building** that wiring, split Step 3: build
-  the wiring first, re-run the test against it and confirm the same failure, then
-  write the implementation. Step 4 only runs the passing case, so deferring the
-  check to it would never execute the failing one.
+Config parity: [the **difference** between what the test wires up and what that
+  path installs — policies, interceptors, defaults the test does *not* inject.
+  For a new path, compare against the wiring this plan will install. When there
+  is no difference, say so **and name what you checked**: "none — read
+  `main.dart` ProviderScope: retry override + dio interceptors, test installs
+  both". A bare "none" reads as verified when it may only mean unexamined, and
+  the implementer gets this line rather than your reasoning.]
+Gate: only if this line **reports a difference**. Then the Red is not yet
+  evidence: if that wiring **already exists**, re-run with it in place before
+  Step 3 and confirm the same failure — if it disappears, stop and report, the
+  premise is a test artifact. If **this plan is still building** the wiring,
+  split Step 3: wiring first, re-run and confirm the same failure, then the
+  implementation. (Step 4 only runs the passing case, so deferring the check
+  there would never execute the failing one.) "none — …" and "N/A — pure unit"
+  proceed straight to Step 3.
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -151,10 +153,12 @@ Two gates stand before Step 3, and only the first is about a surprising failure.
 
 1. If Step 2 does not fail **for the reason you predicted**, stop. The thing to
    doubt is the test you just wrote, not the implementation.
-2. If it *did* fail exactly as predicted, check Step 2's **Config parity** line
+2. If it *did* fail exactly as predicted, read Step 2's **Config parity** line
    before proceeding. A failure that matches the prediction is what an artifact
    looks like, so a clean Red is not by itself evidence that the bug is real.
-   The third case below is reached through this gate.
+   The gate trips only when that line reports a difference; a line that names
+   what was checked and found no difference passes. The third case below is
+   reached through this gate.
 
 Gate 2 is about **reproducing behavior that already exists**, so where Step 2
 names a real Production path the baseline is that path's current wiring and the
