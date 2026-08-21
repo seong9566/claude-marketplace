@@ -113,7 +113,11 @@ Production path: [where this failure occurs when the app runs — the entrypoint
   when the path does not exist yet, or "N/A — pure unit" when there is none.]
 Config parity: [what the test installs or omits relative to that path — the
   policies, interceptors, and defaults it does *not* inject. Empty means the test
-  runs the same wiring production does.]
+  runs the same wiring production does. For a new path, compare against the
+  wiring this plan will install.]
+Gate: if Config parity is non-empty, do not start Step 3. Re-run with that wiring
+  in place and confirm the same failure; if it disappears, stop and report — the
+  premise is a test artifact, not a bug.
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -146,11 +150,17 @@ Two gates stand before Step 3, and only the first is about a surprising failure.
    looks like, so a clean Red is not by itself evidence that the bug is real.
    The third case below is reached through this gate.
 
-Gate 2 is about **reproducing behavior that already exists**, so it binds where
-Step 2 names a real Production path. Where that line says the path is new, there
-is nothing to reproduce and the gate is satisfied — but still write the parity
-line, because a policy the new path will install and the test omits is the same
-trap one release later.
+Gate 2 is about **reproducing behavior that already exists**, so where Step 2
+names a real Production path the baseline is that path's current wiring. Where
+the line says the path is new, the gate still binds — its baseline is simply the
+wiring **this plan will install**. A test that fails under configuration the
+finished route or endpoint will never use sends the implementer after behavior
+nobody asked for, and that lands in the first release, not a later one.
+
+**Write the gate into the plan, not just here.** Step 2 above carries a `Gate:`
+line for exactly this reason: an implementer receives their task section, not
+this skill, so a rule that lives only in the authoring skill never reaches the
+person who runs the test.
 
 - **It passed with no implementation** → that test verifies nothing. Common
   causes: an async mock that returns a value immediately instead of exercising
