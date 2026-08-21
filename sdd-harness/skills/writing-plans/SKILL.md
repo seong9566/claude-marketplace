@@ -108,6 +108,11 @@ def test_specific_behavior():
 
 Run: `pytest tests/path/test.py::test_name -v`
 Expected: FAIL with "function not defined"
+Production path: [where this failure occurs when the app runs — the entrypoint,
+  config, or policy that reaches the same code. "N/A — pure unit" if there is none.]
+Config parity: [what the test installs or omits relative to that path — the
+  policies, interceptors, and defaults it does *not* inject. Empty means the test
+  runs the same wiring production does.]
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -131,8 +136,14 @@ git commit -m "feat: add specific feature"
 
 ## Red Verification — When the Failure Is Wrong, Suspect the Test
 
-If Step 2 does not fail **for the reason you predicted**, do not proceed to
-Step 3. The thing to doubt is the test you just wrote, not the implementation.
+Two gates stand before Step 3, and only the first is about a surprising failure.
+
+1. If Step 2 does not fail **for the reason you predicted**, stop. The thing to
+   doubt is the test you just wrote, not the implementation.
+2. If it *did* fail exactly as predicted, check Step 2's **Config parity** line
+   before proceeding. A failure that matches the prediction is what an artifact
+   looks like, so a clean Red is not by itself evidence that the bug is real.
+   This gate runs on every task — the third case below is reached through it.
 
 - **It passed with no implementation** → that test verifies nothing. Common
   causes: an async mock that returns a value immediately instead of exercising
@@ -151,13 +162,15 @@ Step 3. The thing to doubt is the test you just wrote, not the implementation.
   app already installed `appProviderRetry` — the 30-second timeout came from a
   test that never injected it. An adversarial review overturned the premise
   after the work was done.
-- Either way, fix the test until it fails **for the intended reason**, then
-  continue.
+In the first two cases, fix the test until it fails **for the intended reason**,
+then continue. In the third, give the test the app's real wiring and confirm the
+failure survives — or **discard the premise**, because the bug may not exist.
 
 This is why a plan's Red expectation names the failure **message**, not just
-`Expected: FAIL` — that alone cannot tell the cases apart. For the third case it
-also names the **configuration** the failing test runs under, since a message
-that matches the prediction is exactly what an artifact produces.
+`Expected: FAIL` — that alone cannot tell the first two cases apart — and why
+Step 2 carries **Production path** and **Config parity** lines, which are what
+gate 2 reads. A message matching the prediction is exactly what an artifact
+produces, so the prediction alone can never catch the third case.
 
 ## No Placeholders
 
