@@ -265,10 +265,12 @@ arrives without the setup code is a placeholder, which §No Placeholders forbids
   is silently a no-op" premise was never once seen.
   Where the fix and the compile error cannot be separated, observe the premise
   with a throwaway probe first, then delete the probe. Where compilation **is**
-  the observable — a contract narrowed so an invalid call must stop building, a
-  lint promoted to an error — that failure *is* the Red, and Step 2 names the
-  expected diagnostic and where it points, the same way a run-time step names
-  the message.
+  the observable — a contract narrowed so an invalid call must stop building —
+  the Red still comes first, and it is not the build failure: before the change
+  that call compiles, so what fails is the check asserting the diagnostic. Write
+  it as a test that **runs the compiler and asserts on its output**, naming the
+  expected diagnostic and where it points. A source file that simply stops
+  compiling takes the suite down with it and can be neither Red nor Green.
 - **It failed for the predicted reason, but only because of how the test is
   wired** → that is an artifact, not a reproduction. A test that omits a policy
   the app installs — a retry override, an interceptor, a default the production
@@ -289,7 +291,7 @@ Step 2 carries **Production path** and **Config parity** lines, which are what
 gate 2 reads. A message matching the prediction is exactly what an artifact
 produces, so the prediction alone can never catch the third case.
 
-**"Red: none" is a claim to check, not a property of removal tasks.** Where the behavior already exists — something to delete, a duplicate that reproduces today — the ordinary Red is available and comes first: run the test before the change and watch it fail. Only where nothing failing can be written first, because the state the guard blocks is one the current code cannot reach, does the gate move to mutation: after Green, revert the production change, confirm **that same test** fails, restore it, re-run (the `sdd-harness:verification-before-completion` regression pattern). Measured: a duplicate-prevention test passed with the guard removed entirely, because `findsOneWidget` does not filter offstage widgets — the hole showed only when someone broke it on purpose.
+**"Red: none" is a claim to check, not a property of removal tasks.** Where the behavior already exists — something to delete, a duplicate that reproduces today — the ordinary Red is available and comes first: run the test before the change and watch it fail. Only where nothing failing can be written first, because the state the guard blocks is one the current code cannot reach, does the gate move to mutation, and that changes the task's shape: Step 2 becomes "run it and confirm it passes — no Red is available, and here is why", and a Step 4b carries the real gate — revert the production change, confirm **that same test** fails, restore it, re-run (the `sdd-harness:verification-before-completion` regression pattern). Write 4b with the actual revert command, the same way Step 2b carries its setup. Measured: a duplicate-prevention test passed with the guard removed entirely, because `findsOneWidget` does not filter offstage widgets — the hole showed only when someone broke it on purpose.
 
 ## No Placeholders
 
@@ -324,7 +326,7 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 Existing is not the same as usable — read the declaration your grep landed on, not just its line number. Two hits pass the existence check and still mislead: a symbol whose declaration carries a deprecation marker, and a private member whose name repeats in another file, where the hit you read may not be the one the plan's file resolves.
 
-**A task that removes something needs this grep run backwards.** The forward pass covers only what the plan *references*, so a test asserting on the string, widget, or method you are deleting is invisible to it — and it breaks after the change lands, in a file the plan never named. Grep the removal target across the whole repo — tests included, wherever this repo keeps them (`test/`, `spec/`, `__tests__/`, or beside the source) — and put every hit in that task's **Files**. Measured: deleting an inline search field broke a screen test that asserted on its placeholder; the sibling screen's test was caught only because someone happened to look.
+**A task that removes something needs this grep run backwards.** The forward pass covers only what the plan *references*, so a test asserting on the string, widget, or method you are deleting is invisible to it — and it breaks after the change lands, in a file the plan never named. Grep the removal target across the whole repo — tests included, wherever this repo keeps them (`test/`, `spec/`, `__tests__/`, or beside the source) — then classify the hits — a live reference that has to change, a same-named symbol that means something else, generated or vendored output that the build reproduces — and put only the first kind in that task's **Files**. Measured: deleting an inline search field broke a screen test that asserted on its placeholder; the sibling screen's test was caught only because someone happened to look.
 
 **5. Name collision:** Grep every new class, provider, and file name you introduce. If the name already exists in another feature, the implementer either shadows it or imports the wrong one — and both compile.
 
