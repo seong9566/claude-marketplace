@@ -46,7 +46,7 @@ Skip any step = lying, not verifying
 | Regression test works | Red-green cycle verified | Test passes once |
 | Agent completed | VCS diff shows changes | Agent reports "success" |
 | Requirements met | Line-by-line checklist | Tests passing |
-| Symbol absent from an artifact | Same measurement on a control that must be present | One grep returning 0 |
+| Symbol absent from an artifact | Same measurement on a control in the same artifact and section | One grep returning 0 |
 
 ## Red Flags - STOP
 
@@ -94,10 +94,10 @@ Skip any step = lying, not verifying
 
 **Artifact measurements (grep/strings/size over a build output):**
 ```
-✅ Measure the target AND a control that must be present → control non-zero → report
+✅ Measure the target AND a control that must live in the same artifact and section → control non-zero → report
 ❌ "0 hits, so it's gone" (the tool may read one section only, or the code may have moved to another binary)
 ```
-A measurement tool answers about what it looked at, not about the artifact. Measured: `strings Runner.app/Runner | grep -c <symbol>` returned 0 — not because the symbol was gone, but because `strings` reads `(__TEXT,__text)` and the Xcode 16 debug build had moved app code into `Runner.debug.dylib`. The control symbol returned 0 as well, which is what exposed the measurement as invalid rather than the code as absent.
+A measurement tool answers about what it looked at, not about the artifact — and the control shows it looked in the right place only if it *shares* that place: same artifact, same section, same representation as the target. A control picked from elsewhere can come back non-zero while the target's own location was never read. Where co-location cannot be established, measure every artifact the build emits, or read an authoritative source (linker map, symbol table) instead of a text scan. Measured: `strings Runner.app/Runner | grep -c <symbol>` returned 0 — not because the symbol was gone, but because `strings` reads `(__TEXT,__text)` and the Xcode 16 debug build had moved app code into `Runner.debug.dylib`. The control symbol returned 0 as well, which is what exposed the measurement as invalid rather than the code as absent.
 
 **Requirements:**
 ```
