@@ -125,9 +125,11 @@ Config parity: [every place the test's setup and that path's differ — a policy
   When Production path is "N/A — pure unit", write "N/A — pure unit" here too;
   there is no path to compare against and the gate does not apply.]
 Failure mode (expected): [your prediction at plan time — deterministic (same
-  result every run) or intermittent, and why. **Judge the failure's nature, not
-  parity**: a race or a timing-dependent timeout is intermittent even when the
-  test already runs the production wiring.]
+  result every run) or intermittent, and why, and **at which stage** it fails —
+  compile/type error or run time, since only a run-time failure observes the
+  premise. **Judge the failure's nature, not parity**: a race or a
+  timing-dependent timeout is intermittent even when the test already runs the
+  production wiring.]
 Failure mode (observed): [left blank by the plan; the implementer fills it in
   after running Step 2 — "deterministic", or the rate and run count. Where it
   contradicts the prediction, the observation wins and Step 4 follows it.]
@@ -254,7 +256,21 @@ arrives without the setup code is a placeholder, which §No Placeholders forbids
   the code under test. This failure ships silently — an invalid test is green
   before and after the implementation exists, so nothing ever flags it.
 - **It failed for the wrong reason** → dying on a typo, an import error, or a
-  missing fixture is not Red.
+  missing fixture is not Red. **Where the premise is about run-time behavior, a
+  compile or type error does not reproduce it**, even where the plan predicted
+  this very test would fail: the premise claims something about what the code
+  does when it runs, and a build that never runs it leaves that claim
+  unobserved. Measured: a task predicted `save()` returning `false`, but the
+  test died on `The argument type Null can not be assigned to int` — the "save
+  is silently a no-op" premise was never once seen.
+  Where the fix and the compile error cannot be separated, observe the premise
+  with a throwaway probe first, then delete the probe. Where compilation **is**
+  the observable — a contract narrowed so an invalid call must stop building —
+  the Red still comes first, and it is not the build failure: before the change
+  that call compiles, so what fails is the check asserting the diagnostic. Write
+  it as a test that **runs the compiler and asserts on its output**, naming the
+  expected diagnostic and where it points. A source file that simply stops
+  compiling takes the suite down with it and can be neither Red nor Green.
 - **It failed for the predicted reason, but only because of how the test is
   wired** → that is an artifact, not a reproduction. A test that omits a policy
   the app installs — a retry override, an interceptor, a default the production
@@ -274,6 +290,8 @@ This is why a plan's Red expectation names the failure **message**, not just
 Step 2 carries **Production path** and **Config parity** lines, which are what
 gate 2 reads. A message matching the prediction is exactly what an artifact
 produces, so the prediction alone can never catch the third case.
+
+**"Red: none" is a claim to check, not a property of removal tasks.** Where the behavior already exists — something to delete, a duplicate that reproduces today — the ordinary Red is available and comes first: run the test before the change and watch it fail. Only where nothing failing can be written first, because the state the guard blocks is one the current code cannot reach, does the gate move to mutation, and that changes the task's shape: Step 2 becomes "run it and confirm it passes — no Red is available, and here is why", and a Step 4b carries the real gate — revert **only the guard this task added**, keeping the rest of the change, confirm that same test now fails, restore the guard, re-run (the `sdd-harness:verification-before-completion` regression pattern). Reverting the whole change instead puts you back in Step 2's state, where the test already passed for an unrelated reason, so it proves nothing. If the test still passes with the guard alone removed, it is not measuring the guard — fix the test, or stop and report. Write 4b with the actual mutation, the same way Step 2b carries its setup. Measured: a duplicate-prevention test passed with the guard removed entirely, because `findsOneWidget` does not filter offstage widgets — the hole showed only when someone broke it on purpose.
 
 ## No Placeholders
 
@@ -308,15 +326,23 @@ After writing the complete plan, look at the spec with fresh eyes and check the 
 
 Existing is not the same as usable — read the declaration your grep landed on, not just its line number. Two hits pass the existence check and still mislead: a symbol whose declaration carries a deprecation marker, and a private member whose name repeats in another file, where the hit you read may not be the one the plan's file resolves.
 
+**A task that removes something needs this grep run backwards.** The forward pass covers only what the plan *references*, so a test asserting on the string, widget, or method you are deleting is invisible to it — and it breaks after the change lands, in a file the plan never named. Grep the removal target across the whole repo — tests included, wherever this repo keeps them (`test/`, `spec/`, `__tests__/`, or beside the source) — then classify the hits — a live reference that has to change, a same-named symbol that means something else, vendored code, output the build regenerates — and put only live references in that task's **Files**. Generated output drops out only where the repo does not track it; where it is committed, the output path belongs in **Files** and in the commit as well, alongside the source it comes from and the exact command that regenerates it. Measured: deleting an inline search field broke a screen test that asserted on its placeholder; the sibling screen's test was caught only because someone happened to look.
+
 **5. Name collision:** Grep every new class, provider, and file name you introduce. If the name already exists in another feature, the implementer either shadows it or imports the wrong one — and both compile.
 
 Grep only sees what *the repo* declares, so it is blind to names that arrive by inheritance. **Where a task adds a method to a class extending a framework base type, read that base type's public API too.** An inherited member with the same name and a different signature breaks the build, and the plan sails through this step because nothing in the repo declares it. Measured: a plan named a ViewModel method `update`, which collided with riverpod's inherited `AsyncNotifier.update(FutureOr<T> Function(T))` — grep returned zero, and the implementer hit `Too few positional arguments: 1 required, 0 given`.
 
-**6. Test expectations:** For each test the plan writes, ask whether the expected value describes *correct* behavior or merely records *current* behavior. A plan that pins the bug in an assertion turns Red-Green into a ratchet. Watch fixtures where two values coincide by accident — an assertion that passes for the wrong reason reads as coverage and provides none. Negative assertions (`isNot`, `isNotEmpty`, `isNotNull`) slip past this question — current behavior frequently satisfies them already, so the test is green before the implementation exists and the plan's Red never arrives. For each one, state what the code produces *today* and check it against the matcher. Measured: a plan asserted an error message `isNot(contains(<word>))` when the pre-fix message never contained that word.
+**6. Test expectations:** For each test the plan writes, ask whether the expected value describes *correct* behavior or merely records *current* behavior. A plan that pins the bug in an assertion turns Red-Green into a ratchet. Watch fixtures where two values coincide by accident — an assertion that passes for the wrong reason reads as coverage and provides none. Negative assertions (`isNot`, `isNotEmpty`, `isNotNull`) slip past this question — current behavior frequently satisfies them already, so the test is green before the implementation exists and the plan's Red never arrives. For each one, state what the code produces *today* and check it against the matcher. Measured: a plan asserted an error message `isNot(contains(<word>))` when the pre-fix message never contained that word. Where the code under test has a **fallback** — a null check that reads a second field, a default that fills in — settle this fixture by fixture: in some of them the fallback's answer and the correct one coincide, and those tests are green before the fix exists. Counting them as Red overstates the gate the plan claims to build. Measured: four tests were planned as Red and one was; in the other three a `checkDt` fallback happened to agree with the correct verdict.
 
 **7. Repo idiom fit:** Step 4 proves the names exist; this checks the code you wrote *around* them. Every snippet in the plan has to survive this repo's linter and type checker, so compare it against the linter config and against neighboring files that do the same kind of work — annotations the repo does not use, argument values its lint calls redundant, an import order it enforces. Each of these is a convention you can only get right by reading the repo; recalling one from another project puts the defect in the plan, where an implementer will reproduce it verbatim and review will read it as already decided.
 
 **Placement instructions need the same check against a different target.** A snippet that is correct in the file you copied it from can be wrong in the file the task edits, so comparing it to a precedent is not enough — diff the precedent against the *target* on whatever the instruction depends on: the existing import list, whether the handler you are told to wrap already exists, what the surrounding block already does. Measured, both from one plan: "put the `no_retry` import at the top of the block" came from a precedent file that simply had no `logger.dart`, and in both target files the same import sorted later and would have tripped `directives_ordering`; a test step told the implementer to capture `FlutterError.onError` and call `expect` inside it, which in the target's setup died on a binding assertion before reaching the defect.
+
+**Assertions are placement instructions too.** Before writing a matcher, grep the target test file for how it already asserts on that widget. Measured: a plan used `find.text('<name>')` on a search screen where the query string is also painted into the input field, so the matcher hit two widgets — the same file already used `find.widgetWithText(UserCard, …)` for that reason, with a comment saying why.
+
+**Arguments carry idiom, and §4 cannot see it.** The symbol exists and the call still fails: a value equal to the parameter's declared default trips `avoid_redundant_argument_values`, a field with a codegen `@Default` trips the same lint, a nullable parameter given its own implicit default is redundant, and an explicit type argument on a collection literal (`overrides: <Override>[…]`) fails to compile when the framework version does not export that type. Read the declaration for defaults, and grep one existing call of the same API to copy its spelling. Measured: four such defects in a single plan — three caught by `analyze`, the fourth only by the test run.
+
+**Visual idiom is idiom.** A widget that will sit beside existing siblings — same list, same row — has to match how they render: type scale, icon treatment, padding. Open the sibling; do not recall it. A card that differs from the one directly above it passes both the linter and the type checker and ships as a visual defect.
 
 **8. Verification scope matches the blast radius:** Each task's verify step names the command the implementer runs, and by default that command is scoped to the code the task touches. Where a task widens a shared interface — a new method on an abstract type, a changed signature — that scope is too narrow: implementations live wherever someone wrote one, including fakes in test directories the task never mentions. Scope those tasks' checks to the whole project.
 

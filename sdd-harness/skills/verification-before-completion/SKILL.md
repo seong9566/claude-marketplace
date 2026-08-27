@@ -46,6 +46,7 @@ Skip any step = lying, not verifying
 | Regression test works | Red-green cycle verified | Test passes once |
 | Agent completed | VCS diff shows changes | Agent reports "success" |
 | Requirements met | Line-by-line checklist | Tests passing |
+| Symbol absent from an artifact | Same measurement on a control in the same artifact and section | One grep returning 0 |
 
 ## Red Flags - STOP
 
@@ -90,6 +91,13 @@ Skip any step = lying, not verifying
 ✅ [Run build] [See: exit 0] "Build passes"
 ❌ "Linter passed" (linter doesn't check compilation)
 ```
+
+**Artifact measurements (grep/strings/size over a build output):**
+```
+✅ Measure the target AND a control that must live in the same artifact and section → control non-zero → report
+❌ "0 hits, so it's gone" (the tool may read one section only, or the code may have moved to another binary)
+```
+A measurement tool answers about what it looked at, not about the artifact — and the control shows it looked in the right place only if it *shares* that place: same artifact, same section, same representation as the target. A control picked from elsewhere can come back non-zero while the target's own location was never read. Where co-location cannot be established, scanning more files with the same tool does not help — its section and representation limits travel with it. Read an authoritative source for **this** build instead — linker map, symbol table, the toolchain's own introspection. An older build that once showed the symbol is not a substitute: whether its artifacts and sections still map the same way is the very thing in question (in the case above, a toolchain upgrade is what moved them). Measured: `strings Runner.app/Runner | grep -c <symbol>` returned 0 — not because the symbol was gone, but because `strings` reads `(__TEXT,__text)` and the Xcode 16 debug build had moved app code into `Runner.debug.dylib`. The control symbol returned 0 as well, which is what exposed the measurement as invalid rather than the code as absent.
 
 **Requirements:**
 ```
