@@ -62,20 +62,6 @@ PRD를 읽고 **feature-first vs layer-first**를 bounded context 결합도로 �
 
 동봉 템플릿: 구조 검사 9종(Stop hook + pre-commit)·git 훅·커버리지 게이트·CI·릴리즈 워크플로·ADR 체계·`core` 인프라(network/storage/errors/logging)·`sealed Result<T>`.
 
-### `sdd-harness`
-
-계획을 subagent에 위임해 실행하는 개발 하네스 스킬 **14종**. 업스트림 [superpowers](https://github.com/obra/superpowers) v6.2.0(MIT, Jesse Vincent) 파생 — 상세·변경점·라이선스는 [`sdd-harness/README.md`](sdd-harness/README.md).
-
-```
-/plugin install sdd-harness@seong-skills
-```
-
-`brainstorming` → `writing-plans` → `choosing-an-implementer` → `subagent-driven-development` 한 줄로 이어진다. 실행 직전에 **구현자를 누구로 할지**(외부 CLI 에이전트·하네스 내부 subagent·직접) 권장안과 함께 묻고, 그다음 태스크마다 새 구현자 subagent를 띄우고, 리뷰를 걸고, 실패하면 **유계 fix 루프**(라운드 1–3 재개 → 4–5 상위 모델 → 5라운드 breaker)를 돈다. bash를 못 쓰는 repo는 `subagent-driven-development`의 "Without the Bundled Scripts" 절 대로 스크립트를 건너뛴다.
-
-경로·브랜치 규약 같은 프로젝트 고유값은 플러그인에 박지 않았다 — repo의 `CLAUDE.md`에 적으면 스킬이 그걸 따른다(설정 항목 표는 위 README 참조).
-
-> ⚠️ **스킬명 14종이 업스트림 `superpowers`와 전부 같다.** 둘 다 켜면 거의 같은 스킬이 쌍으로 제시된다 — 둘 중 하나만 켠다. 상세: [`sdd-harness/README.md` §이름 충돌](sdd-harness/README.md#이름-충돌).
-
 ### `dev-harness`
 
 개발 세션 보조 스킬 **5종**.
