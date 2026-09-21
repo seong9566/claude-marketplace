@@ -64,7 +64,7 @@ PRD를 읽고 **feature-first vs layer-first**를 bounded context 결합도로 �
 
 ### `dev-harness`
 
-개발 세션 보조 스킬 **5종**.
+개발 세션 보조 스킬 **2종**.
 
 ```
 /plugin install dev-harness@seong-skills
@@ -74,7 +74,6 @@ PRD를 읽고 **feature-first vs layer-first**를 bounded context 결합도로 �
 | --- | --- |
 | `code-review` | PR 코드 리뷰 |
 | `grilling` | 계획·결정을 한 번에 한 질문씩 캐물어 스트레스 테스트 |
-
 
 > ⚠️ **두 이름 모두 개인 스킬로 흔히 쓰는 이름이다.** `~/.claude/skills/`에 같은 이름이 있어도 서로 덮어쓰지는 않지만(`dev-harness:code-review` vs `code-review`), 어느 쪽을 부르는지 헷갈리기 쉽다. 상세: [`dev-harness/README.md` §이름 충돌](dev-harness/README.md#이름-충돌).
 
