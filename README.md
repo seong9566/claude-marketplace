@@ -72,15 +72,11 @@ PRD를 읽고 **feature-first vs layer-first**를 bounded context 결합도로 �
 
 | 스킬 | 용도 |
 | --- | --- |
-| `ai-readiness-cartography` | 저장소를 AI-Ready 루브릭으로 감사해 점수·HTML 리포트 생성 |
 | `code-review` | PR 코드 리뷰 |
 | `grilling` | 계획·결정을 한 번에 한 질문씩 캐물어 스트레스 테스트 |
-| `grill-me` | `grilling`을 부르는 별칭 |
-| `improve-token-efficiency` | 세션 JSONL을 파싱해 토큰·컨텍스트 효율 리포트 생성 |
 
-`ai-readiness-cartography`·`improve-token-efficiency`는 `python3`가 필요하다.
 
-> ⚠️ **다섯 이름 모두 개인 스킬로 흔히 쓰는 이름이다.** `~/.claude/skills/`에 같은 이름이 있어도 서로 덮어쓰지는 않지만(`dev-harness:code-review` vs `code-review`), 어느 쪽을 부르는지 헷갈리기 쉽다. 상세: [`dev-harness/README.md` §이름 충돌](dev-harness/README.md#이름-충돌).
+> ⚠️ **두 이름 모두 개인 스킬로 흔히 쓰는 이름이다.** `~/.claude/skills/`에 같은 이름이 있어도 서로 덮어쓰지는 않지만(`dev-harness:code-review` vs `code-review`), 어느 쪽을 부르는지 헷갈리기 쉽다. 상세: [`dev-harness/README.md` §이름 충돌](dev-harness/README.md#이름-충돌).
 
 ## 이 repo를 고칠 때
 

@@ -23,7 +23,7 @@
     },
     {
       "name": "dev-harness",
-      "description": "개발 세션 보조 스킬 5종. ai-readiness-cartography(저장소 AI-Ready 감사·HTML 리포트), code-review(PR 리뷰), grilling+grill-me(계획·결정 스트레스 테스트), improve-token-efficiency(세션 JSONL 토큰 효율 분석·대시보드). ⚠️ 다섯 이름 모두 개인 스킬로 흔한 이름이라 ~/.claude/skills/ 사본과 헷갈리기 쉽다 — 부를 때 dev-harness: 접두를 붙인다(README §이름 충돌).",
+      "description": "개발 세션 보조 스킬 2종 — PR 코드리뷰(code-review), 계획·결정 스트레스 테스트(grilling). ⚠️ 두 이름 모두 개인 스킬로 흔한 이름이라 ~/.claude/skills/ 사본과 헷갈리기 쉽다 — 부를 때 dev-harness: 접두를 붙인다(README §이름 충돌).",
       "source": "./dev-harness",
       "category": "development"
     }
