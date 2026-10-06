@@ -1,6 +1,6 @@
 # dev-harness
 
-개발 세션에서 계획을 집요하게 스트레스 테스트할 때 쓰는 보조 스킬입니다. PR 코드 리뷰(`code-review`)는 0.4.0에서 뺐다 — superpowers `requesting-code-review`를 쓴다.
+개발 세션에서 계획을 집요하게 스트레스 테스트할 때 쓰는 보조 스킬입니다. PR 코드 리뷰(`code-review`)는 0.4.0에서 뺐습니다 — superpowers `requesting-code-review`를 씁니다.
 
 ## 이름 충돌
 

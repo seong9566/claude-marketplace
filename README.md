@@ -64,7 +64,7 @@ PRD를 읽고 **feature-first vs layer-first**를 bounded context 결합도로 �
 
 ### `dev-harness`
 
-개발 세션 보조 스킬 **2종**.
+개발 세션 보조 스킬 **1종**.
 
 ```
 /plugin install dev-harness@seong-skills
